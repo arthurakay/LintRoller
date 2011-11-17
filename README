@@ -1,0 +1,7 @@
+PhantomLint is an add-on to Phantom.js that recursively dives into a directory and lints your JavaScript files.
+
+An example shell script (test.sh) is provided.
+
+CONFIG OPTIONS
+  - verbose (Boolean) Defaults to true
+  - filepath (String) A relative filepath to the directory containing JS files
