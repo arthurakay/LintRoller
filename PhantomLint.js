@@ -10,12 +10,29 @@ var filesystem = require('fs'),
  * GitHub Project: https://github.com/arthurakay/PhantomLint
  */
 PhantomLint = {
+    /**
+     * @property
+     */
     verbose  : true,
+
+    /**
+     * @property
+     */
     fileTree : null,
+
+    /**
+     * @property
+     */
     files    : [],
 
+    /**
+     * @property
+     */
     jsLint   : 'assets/jslint.js',
 
+    /**
+     * @property
+     */
     lintOptions : {
         nomen    : true, //if names may have dangling _
         plusplus : true, //if increment/decrement should be allowed
@@ -27,7 +44,7 @@ PhantomLint = {
 
     /**
      * @method
-     * @param list
+     * @param {object} config
      */
     init : function(config) {
         this.log('JSLint? ' + phantom.injectJs(this.jsLint), true);
@@ -43,18 +60,25 @@ PhantomLint = {
         this.announceSuccess();
     },
 
+    /**
+     * @method
+     */
     announceErrors: function() {
         this.log('\nFix Your Errors!\n\n', true);
         phantom.exit();
     },
 
+    /**
+     * @method
+     */
     announceSuccess: function() {
         this.log('\nSuccessfully linted yo shit.\n\n', true);
         phantom.exit();
     },
 
     /**
-     * 
+     * @method
+     * @param {string} path
      */
     getFiles : function(path) {
         var tree = filesystem.list(path);
@@ -67,7 +91,8 @@ PhantomLint = {
 
     /**
      * @method
-     * @param list
+     * @param {array} list
+     * @param {string} path
      */
     parseTree : function(list, path) {
         var x     = 0,
@@ -109,7 +134,7 @@ PhantomLint = {
     },
 
     /**
-     * 
+     * @method
      */
     lintFiles : function() {
         var j = 0,
@@ -152,6 +177,11 @@ PhantomLint = {
         }
     },
 
+    /**
+     * @method
+     * @param {string} msg
+     * @param {boolean} override
+     */
     log : function(msg, override) {
         if (this.verbose || override) {
             console.log(msg);
