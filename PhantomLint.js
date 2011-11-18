@@ -1,6 +1,14 @@
 var filesystem = require('fs'),
     JSLINT;
 
+/**
+ * @class PhantomLint
+ * @author Arthur Kay (http://www.akawebdesign.com)
+ * @singleton
+ * @version 1.0
+ *
+ * GitHub Project: https://github.com/arthurakay/PhantomLint
+ */
 PhantomLint = {
     verbose  : true,
     fileTree : null,
