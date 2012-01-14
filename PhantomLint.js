@@ -65,13 +65,13 @@ PhantomLint = {
      * @cfg {string} jsLint A relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js)
      */
     init : function(config) {
-        this.log('JSLint? ' + phantom.injectJs(this.jsLint), true);
-        if (!JSLINT) { phantom.exit(1); }
-
         //APPLY CONFIG OPTIONS
         this.applyLintOptions(config.lintOptions);
         if (config.verbose !== undefined) { this.verbose = config.verbose; }
         if (config.jsLint !== undefined) { this.jsLint = config.jsLint; }
+
+        this.log('JSLint? ' + phantom.injectJs(this.jsLint), true);
+        if (!JSLINT) { phantom.exit(1); }
 
         this.fileTree = this.getFiles(config.filepath);
 
