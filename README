@@ -2,7 +2,7 @@ PhantomLint is an add-on to Phantom.js that recursively dives into a directory a
 
 An example shell script (test.sh) is provided.
 
-CONFIG OPTIONS
+CONFIG OPTIONS:
   - filepath (String)
     A relative filepath to the directory containing JS files
 
@@ -15,3 +15,7 @@ CONFIG OPTIONS
 
   - verbose (Boolean)
     Defaults to true.
+
+
+NOTES:
+  - The PhantomJS binary included in this repo is the Mac OS X static build
