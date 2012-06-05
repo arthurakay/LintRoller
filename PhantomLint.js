@@ -5,7 +5,7 @@ var filesystem = require('fs'),
  * @class PhantomLint
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 1.0
+ * @version 1.0 (additional custom modifications added)
  *
  * GitHub Project: https://github.com/arthurakay/PhantomLint
  */
@@ -14,6 +14,11 @@ PhantomLint = {
      * @property
      */
     verbose  : true,
+    
+    /**
+     * @property
+     */
+    stopOnFirstError  : true,
 
     /**
      * @property
@@ -29,6 +34,11 @@ PhantomLint = {
      * @property
      */
     jsLint   : 'assets/jslint.js',
+    
+    /**
+     * @property
+     */
+    logFile   : 'error_log.txt',
 
     /**
      * @property
@@ -52,7 +62,9 @@ PhantomLint = {
         if (!config) { return false; }
 
         for (i in config) {
-            this.lintOptions[i] = config[i];
+            if (config.hasOwnProperty(i)) {
+                this.lintOptions[i] = config[i];
+            }
         }
     },
 
@@ -63,12 +75,17 @@ PhantomLint = {
      * @cfg {object} lintOptions A configuration object to add/override the default options for JS Lint
      * @cfg {boolean} verbose false to hide verbose output in your terminal (defaults to true)
      * @cfg {string} jsLint A relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js)
+     * @cfg {string} logFile A relative filepath to where the output error log should go.
+     * @cfg {boolean} stopOnFirstError false to gather all errors in the file tree (defaults to true)
      */
     init : function(config) {
         //APPLY CONFIG OPTIONS
         this.applyLintOptions(config.lintOptions);
+        
         if (config.verbose !== undefined) { this.verbose = config.verbose; }
+        if (config.stopOnFirstError !== undefined) { this.stopOnFirstError = config.stopOnFirstError; }
         if (config.jsLint !== undefined) { this.jsLint = config.jsLint; }
+        if (config.logFile !== undefined) { this.logFile = config.logFile; }
 
         this.log('JSLint? ' + phantom.injectJs(this.jsLint), true);
         if (!JSLINT) { phantom.exit(1); }
@@ -86,8 +103,12 @@ PhantomLint = {
     /**
      * @method
      */
-    announceErrors: function() {
-        this.log('\nFix Your Errors!\n\n', true);
+    announceErrors: function(errorList) {
+        if (typeof this.logFile === 'string') {
+            this.logToFile(errorList);
+        }
+        
+        this.log('\nFix Your Errors! Check the log file for more information.\n\n', true);
         phantom.exit(1);
     },
 
@@ -122,7 +143,7 @@ PhantomLint = {
             regex = /.*\.js$/i,
             childPath, childTree;
 
-        for (; x < list.length; x++) {
+        for (x; x < list.length; x++) {
             if (filesystem.isFile(path + list[x])) {
                 this.log(list[x] + ' IS A FILE');
                 /**
@@ -148,7 +169,7 @@ PhantomLint = {
                     this.log(list[x] + ' IS A RELATIVE DIRECTORY PATH');
                 }
                 else {
-                    childPath = path + list[x] + '/'
+                    childPath = path + list[x] + '/';
                     childTree = this.getFiles(childPath);
                     this.parseTree(childTree, childPath);
                 }
@@ -161,12 +182,13 @@ PhantomLint = {
      */
     lintFiles : function() {
         var j = 0,
+            errorList = [],
             file, js;
 
         /**
          * Loop through all files
          */
-        for (; j < this.files.length; j++) {
+        for (j; j < this.files.length; j++) {
 
             file = this.files[j];
             js   = filesystem.read(file);
@@ -177,27 +199,49 @@ PhantomLint = {
                 error;
 
             if (!result) {
-                for  (; i < totalErrors; i++)  {
+                for  (i; i < totalErrors; i++)  {
                     error = JSLINT.errors[i];
 
                     if (error) {
-                        /**
-                         * Output error and stop
-                         */
-                        this.log(
-                            [
-                                file,
-                                error.line,
-                                error.character,
-                                error.reason
-                            ].join(':'),
-                            true
+                        errorList.push(
+                            file,
+                            '    Line #: ' + error.line,
+                            '    Char #: ' + error.character,
+                            '    Reason: ' + error.reason,
+                            '',
+                            ''
                         );
-                        this.announceErrors();
+                        
+                        if (this.stopOnFirstError) { break; }
                     }
+                }
+                
+                if (this.stopOnFirstError && errorList.length > 0) {
+                    this.announceErrors(errorList);
                 }
             }
         }
+
+        if (errorList.length > 0) {
+            this.announceErrors(errorList);
+        }
+    },
+    
+    /**
+     *
+     */
+    logToFile : function(errorList) {
+        this.log('\nWriting ' + errorList.length + ' errors to log file.', true);
+        filesystem.touch(this.logFile);
+            
+        var stream = filesystem.open(this.logFile, 'w');
+            
+        var i = 0;
+        for (i; i < errorList.length; i++) {
+            stream.writeLine(errorList[i]);
+        }
+            
+        stream.close();
     },
 
     /**
