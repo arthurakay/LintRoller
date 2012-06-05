@@ -62,7 +62,9 @@ PhantomLint = {
         if (!config) { return false; }
 
         for (i in config) {
-            this.lintOptions[i] = config[i];
+            if (config.hasOwnProperty(i)) {
+                this.lintOptions[i] = config[i];
+            }
         }
     },
 
@@ -73,6 +75,8 @@ PhantomLint = {
      * @cfg {object} lintOptions A configuration object to add/override the default options for JS Lint
      * @cfg {boolean} verbose false to hide verbose output in your terminal (defaults to true)
      * @cfg {string} jsLint A relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js)
+     * @cfg {string} logFile A relative filepath to where the output error log should go.
+     * @cfg {boolean} stopOnFirstError false to gather all errors in the file tree (defaults to true)
      */
     init : function(config) {
         //APPLY CONFIG OPTIONS
@@ -178,6 +182,7 @@ PhantomLint = {
      */
     lintFiles : function() {
         var j = 0,
+            errorList = [],
             file, js;
 
         /**
@@ -191,7 +196,6 @@ PhantomLint = {
             var i           = 0,
                 result      = JSLINT(js, this.lintOptions),
                 totalErrors = JSLINT.errors.length,
-                errorList   = [],
                 error;
 
             if (!result) {
@@ -212,10 +216,14 @@ PhantomLint = {
                     }
                 }
                 
-                if (errorList.length > 0) {
+                if (this.stopOnFirstError && errorList.length > 0) {
                     this.announceErrors(errorList);
                 }
             }
+        }
+
+        if (errorList.length > 0) {
+            this.announceErrors(errorList);
         }
     },
     
@@ -223,7 +231,7 @@ PhantomLint = {
      *
      */
     logToFile : function(errorList) {
-        this.log('\nWriting errors to log file.', true);
+        this.log('\nWriting ' + errorList.length + ' errors to log file.', true);
         filesystem.touch(this.logFile);
             
         var stream = filesystem.open(this.logFile, 'w');
