@@ -3,8 +3,11 @@ PhantomLint is an add-on to Phantom.js that recursively dives into a directory a
 An example shell script (test.sh) is provided.
 
 CONFIG OPTIONS:
-  - filepath (String)
-    A relative filepath to the directory containing JS files
+  - filepaths (Array)
+    REQUIRED. An array of relative filepaths to the directories containing JS files
+
+  - exclusions (Array)
+    An array of relative filepaths to the directories containing JS files that should be ignored
 
   - jsLint (String)
     A relative filepath to the local JSLint file to use
@@ -21,6 +24,7 @@ CONFIG OPTIONS:
 
   - logFile (String)
     A relative filepath to where the output error log should go.
+    (defaults to ./error_log.txt)
 
 
 NOTES:
