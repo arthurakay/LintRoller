@@ -28,6 +28,11 @@ PhantomLint = {
     /**
      * @property
      */
+    exclusions : null,
+
+    /**
+     * @property
+     */
     jsLint   : 'assets/jslint.js',
 
     /**
@@ -66,7 +71,8 @@ PhantomLint = {
     /**
      * @method
      * @param {object} config
-     * @cfg {string} filepaths An array of relative filepaths to the folders containing JS files
+     * @cfg {array} filepaths An array of relative filepaths to the folders containing JS files
+     * @cfg {array} exclusions An array of relative filepaths to the folders containing JS files that should NOT be linted
      * @cfg {object} lintOptions A configuration object to add/override the default options for JS Lint
      * @cfg {boolean} verbose false to hide verbose output in your terminal (defaults to true)
      * @cfg {string} jsLint A relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js)
@@ -81,6 +87,7 @@ PhantomLint = {
         if (config.stopOnFirstError !== undefined) { this.stopOnFirstError = config.stopOnFirstError; }
         if (config.jsLint !== undefined) { this.jsLint = config.jsLint; }
         if (config.logFile !== undefined) { this.logFile = config.logFile; }
+        if (config.exclusions !== undefined) { this.exclusions = config.exclusions; }
 
         this.log('JSLint? ' + phantom.injectJs(this.jsLint), true);
         if (!JSLINT) { phantom.exit(1); }
@@ -146,6 +153,22 @@ PhantomLint = {
         for (i; i < path.length; i++) {
             var currPath = path[i];
             this.log('*** currPath: ' + currPath);
+
+            if (this.exclusions) {
+                this.log('Checking exclusion paths...');
+
+                var j = 0;
+                var exclude = false;
+
+                for (j; j < this.exclusions.length; j++) {
+                    if (currPath === this.exclusions[j]) { exclude = true; }
+                }
+
+                if (exclude) {
+                    this.log('Excluding path: ' + currPath);
+                    continue;
+                }
+            }
 
             var list = this.getFiles(currPath);
             var x = 0;
@@ -240,7 +263,7 @@ PhantomLint = {
      *
      */
     logToFile : function(errorList) {
-        this.log('\nWriting ' + errorList.length + ' errors to log file.', true);
+        this.log('\nWriting ' + (errorList.length / 6) + ' errors to log file.', true);
         filesystem.touch(this.logFile);
 
         var stream = filesystem.open(this.logFile, 'w');
