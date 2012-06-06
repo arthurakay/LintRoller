@@ -5,7 +5,7 @@ var filesystem = require('fs'),
  * @class PhantomLint
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 1.1
+ * @version 1.2
  *
  * GitHub Project: https://github.com/arthurakay/PhantomLint
  */
@@ -14,16 +14,11 @@ PhantomLint = {
      * @property
      */
     verbose  : true,
-    
-    /**
-     * @property
-     */
-    stopOnFirstError  : true,
 
     /**
      * @property
      */
-    fileTree : null,
+    stopOnFirstError  : true,
 
     /**
      * @property
@@ -34,7 +29,7 @@ PhantomLint = {
      * @property
      */
     jsLint   : 'assets/jslint.js',
-    
+
     /**
      * @property
      */
@@ -71,7 +66,7 @@ PhantomLint = {
     /**
      * @method
      * @param {object} config
-     * @cfg {string} filepath A relative filepath to the folder containing JS files
+     * @cfg {string} filepaths An array of relative filepaths to the folders containing JS files
      * @cfg {object} lintOptions A configuration object to add/override the default options for JS Lint
      * @cfg {boolean} verbose false to hide verbose output in your terminal (defaults to true)
      * @cfg {string} jsLint A relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js)
@@ -81,7 +76,7 @@ PhantomLint = {
     init : function(config) {
         //APPLY CONFIG OPTIONS
         this.applyLintOptions(config.lintOptions);
-        
+
         if (config.verbose !== undefined) { this.verbose = config.verbose; }
         if (config.stopOnFirstError !== undefined) { this.stopOnFirstError = config.stopOnFirstError; }
         if (config.jsLint !== undefined) { this.jsLint = config.jsLint; }
@@ -90,9 +85,7 @@ PhantomLint = {
         this.log('JSLint? ' + phantom.injectJs(this.jsLint), true);
         if (!JSLINT) { phantom.exit(1); }
 
-        this.fileTree = this.getFiles(config.filepath);
-
-        this.parseTree(this.fileTree, config.filepath);
+        this.parseTree(config.filepaths);
         this.log('Filesystem has been parsed. Looping through available files...');
 
         this.lintFiles();
@@ -107,7 +100,7 @@ PhantomLint = {
         if (typeof this.logFile === 'string') {
             this.logToFile(errorList);
         }
-        
+
         this.log('\nFix Your Errors! Check the log file for more information.\n\n', true);
         phantom.exit(1);
     },
@@ -127,7 +120,7 @@ PhantomLint = {
     getFiles : function(path) {
         var tree = filesystem.list(path);
 
-        this.log('FILES FOUND AT PATH:');
+        this.log('\nFILES FOUND AT PATH:' + path);
         this.log(tree);
 
         return tree;
@@ -138,40 +131,56 @@ PhantomLint = {
      * @param {array} list
      * @param {string} path
      */
-    parseTree : function(list, path) {
-        var x     = 0,
+    parseTree : function(pathConfig) {
+        var i     = 0,
             regex = /.*\.js$/i,
-            childPath, childTree;
+            path  = [];
 
-        for (x; x < list.length; x++) {
-            if (filesystem.isFile(path + list[x])) {
-                this.log(list[x] + ' IS A FILE');
-                /**
-                 * We only want JS files
-                 */
-                if (regex.test(list[x])) {
-                    this.files.push(path + list[x]);
-                    this.log(list[x] + ' IS A JS FILE. Added to the list.');
+        if (typeof pathConfig === 'string') {
+            path[0] = pathConfig;
+        }
+        else {
+            path = pathConfig; //should be an array of strings
+        }
+
+        for (i; i < path.length; i++) {
+            var currPath = path[i];
+            this.log('*** currPath: ' + currPath);
+
+            var list = this.getFiles(currPath);
+            var x = 0;
+
+            for (x; x < list.length; x++) {
+                var childPath, childTree;
+
+                if (filesystem.isFile(currPath + list[x])) {
+                    this.log(list[x] + ' IS A FILE');
+                    /**
+                     * We only want JS files
+                     */
+                    if (regex.test(list[x])) {
+                        this.files.push(currPath + list[x]);
+                        this.log(list[x] + ' IS A JS FILE. Added to the list.');
+                    }
+                    else {
+                        this.log(list[x] + ' IS NOT A JS FILE');
+                    }
                 }
                 else {
-                    this.log(list[x] + ' IS NOT A JS FILE');
-                }
-            }
-            else {
-                this.log(list[x] + ' IS NOT A FILE');
+                    this.log(list[x] + ' IS NOT A FILE');
 
-                /**
-                 * If not a file
-                 *   - check against parent paths
-                 *   - recurse into child paths
-                 */
-                if (list[x] === '.' || list[x] === '..') {
-                    this.log(list[x] + ' IS A RELATIVE DIRECTORY PATH');
-                }
-                else {
-                    childPath = path + list[x] + '/';
-                    childTree = this.getFiles(childPath);
-                    this.parseTree(childTree, childPath);
+                    /**
+                     * If not a file
+                     *   - check against parent paths
+                     *   - recurse into child paths
+                     */
+                    if (list[x] === '.' || list[x] === '..') {
+                        this.log(list[x] + ' IS A RELATIVE DIRECTORY PATH');
+                    }
+                    else {
+                        childPath = currPath + list[x] + '/';
+                        this.parseTree(childPath);
+                    }
                 }
             }
         }
@@ -211,11 +220,11 @@ PhantomLint = {
                             '',
                             ''
                         );
-                        
+
                         if (this.stopOnFirstError) { break; }
                     }
                 }
-                
+
                 if (this.stopOnFirstError && errorList.length > 0) {
                     this.announceErrors(errorList);
                 }
@@ -226,21 +235,21 @@ PhantomLint = {
             this.announceErrors(errorList);
         }
     },
-    
+
     /**
      *
      */
     logToFile : function(errorList) {
         this.log('\nWriting ' + errorList.length + ' errors to log file.', true);
         filesystem.touch(this.logFile);
-            
+
         var stream = filesystem.open(this.logFile, 'w');
-            
+
         var i = 0;
         for (i; i < errorList.length; i++) {
             stream.writeLine(errorList[i]);
         }
-            
+
         stream.close();
     },
 
