@@ -5,7 +5,7 @@ var filesystem = require('fs'),
  * @class PhantomLint
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 1.2
+ * @version 1.2.1
  *
  * GitHub Project: https://github.com/arthurakay/PhantomLint
  */
