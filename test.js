@@ -1,5 +1,15 @@
 var config = {
-    filepath : 'assets/' //relative to current directory
+    filepaths: [
+		'assets/'
+	],
+	exclusions: [
+		// ...
+	],
+	jsLint: './assets/jslint.js',
+	lintOptions: {},
+	verbose: false,
+	stopOnFirstError: false,
+	logFile: './error.log'
 };
 
 phantom.injectJs('PhantomLint.js');
