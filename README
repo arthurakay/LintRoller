@@ -1,6 +1,9 @@
-PhantomLint is an add-on to Phantom.js that recursively dives into a directory and lints your JavaScript files.
+OVERVIEW:
+  - PhantomLint is an add-on to Phantom.js that recursively dives into a directory and lints your JavaScript files.
+  - Available linting platforms include JSLint and JSHint.
+  - An example shell script (test.sh, test.bat) is provided to run the test.js demo.
 
-An example shell script (test.sh) is provided.
+
 
 CONFIG OPTIONS:
   - filepaths (Array)
@@ -9,12 +12,15 @@ CONFIG OPTIONS:
   - exclusions (Array)
     An array of relative filepaths to the directories containing JS files that should be ignored
 
-  - jsLint (String)
-    A relative filepath to the local JSLint file to use
-    (defaults to ./assets/jslint.js)
+  - jsLint (Object/Boolean)
+    An object containing "file" and "options" properties (False to disable usage.).
+      - "file" is a relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js).
+      - "options" is an object containing the optional lint flags.
 
-  - lintOptions (Object)
-    A configuration object to add/override the default options for JS Lint
+  - jsHint (Object/Boolean)
+    An object containing "file" and "options" properties (False to disable usage.).
+      - "file" is a relative filepath to the local JSHint file to use (defaults to ./assets/jshint-master/src/stable/jshint.js).
+      - "options" is an object containing the optional lint flags.
 
   - verbose (Boolean)
     Defaults to true.
@@ -25,6 +31,7 @@ CONFIG OPTIONS:
   - logFile (String)
     A relative filepath to where the output error log should go.
     (defaults to ./error_log.txt)
+
 
 
 NOTES:
