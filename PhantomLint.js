@@ -22,7 +22,7 @@
 
 var fs = require('fs'),
     JSLINT = require('jslint'),
-    JSHINT = require('jshint');
+    JSHINT = require('jshint').JSHINT;
 
 /**
  * @class PhantomLint
@@ -63,8 +63,6 @@ PhantomLint = {
      *   - "options" is an object containing the optional lint flags.
      */
     jsLint : {
-        file : './assets/jslint.js',
-
         options : {
             nomen    : true, //if names may have dangling _
             plusplus : true, //if increment/decrement should be allowed
@@ -87,8 +85,6 @@ PhantomLint = {
      *
      */
     jsHint : {
-        file : './assets/jshint-master/src/stable/jshint.js',
-
         options : {
 
         }
@@ -124,6 +120,7 @@ PhantomLint = {
         this.parseTree(config.filepaths);
         this.log('\nFilesystem has been parsed. Looping through available files...');
 
+        this.clearLogFile();
         this.lintFiles();
 
         this.announceSuccess();
@@ -237,14 +234,14 @@ PhantomLint = {
 
         for (i; i < path.length; i++) {
             var currPath = path[i];
+            var exclude = false;
+
             this.log('\n*** currPath: ' + currPath);
 
             if (this.exclusions) {
                 this.log('Checking exclusion paths...');
 
                 var j = 0;
-                var exclude = false;
-
                 for (j; j < this.exclusions.length; j++) {
                     if (currPath === this.exclusions[j]) {
                         exclude = true;
@@ -304,7 +301,10 @@ PhantomLint = {
      */
     lintFiles : function () {
         var x = 0,
+            jsLintErrors = [],
+            jsHintErrors = [],
             errorList = [],
+            errors = 0,
             j,
             linter;
 
@@ -318,24 +318,33 @@ PhantomLint = {
 
             if (linter === JSLINT) {
                 this.log('Running JSLint against code...', false);
-                errorList = this.runJSLint(errorList);
+                jsLintErrors = this.runJSLint();
+
+                errors += jsLintErrors.length;
+                jsLintErrors.splice(0,0, '=============== Running JSLint... ===============\n\n');
             }
             else if (linter === JSHINT) {
                 this.log('Running JSHint against code...', false);
-                errorList = this.runJSHint(errorList);
+                jsHintErrors = this.runJSHint();
+
+                errors += jsHintErrors.length;
+                jsHintErrors.splice(0,0, '=============== Running JSHint... ===============\n\n');
             }
         }
 
-        if (errorList.length > 0) {
+        if (errors > 0) {
+            errorList = errorList.concat(jsLintErrors, jsHintErrors);
             this.announceErrors(errorList);
         }
+
     },
 
     /**
      * @private
      */
-    runJSLint : function (errorList) {
+    runJSLint : function () {
         var j = 0,
+            errorList = [],
             file, js;
 
         for (j; j < this.files.length; j++) {
@@ -380,8 +389,9 @@ PhantomLint = {
     /**
      * @private
      */
-    runJSHint : function (errorList) {
+    runJSHint : function () {
         var j = 0,
+            errorList = [],
             file, js;
 
         for (j; j < this.files.length; j++) {
@@ -390,7 +400,7 @@ PhantomLint = {
             js = fs.readFileSync(file, 'utf8');
 
             var i = 0,
-                result = JSHINT(js, this.jsHint.options),
+                result = JSHINT.jshint(js, this.jsHint.options),
                 totalErrors = JSHINT.errors.length,
                 error;
 
@@ -427,15 +437,7 @@ PhantomLint = {
      * @private
      */
     logToFile : function (errorList) {
-        try {
-            this.log('\nDeleting old log file.', true);
-            fs.unlinkSync(this.logFile);
-        }
-        catch (err) {
-            this.log('\nNo log file currently exists.', true);
-        }
-
-        this.log('\nWriting ' + (errorList.length / 6) + ' errors to new log file.', true);
+        this.log('\nWriting ' + ((errorList.length  - this.linters.length ) / 6) + ' errors to new log file.', true);
 
         var header = 'PhantomLint : Output for ' + new Date() + '\n\n';
         errorList.splice(0, 0, header);
@@ -443,6 +445,17 @@ PhantomLint = {
         var output = errorList.join().replace(/,/g, '\n');
 
         fs.writeFileSync(this.logFile, output);
+    },
+
+    clearLogFile : function() {
+        try {
+            this.log('\nDeleting old log file...', true);
+            fs.unlinkSync(this.logFile);
+            this.log('Done.', true);
+        }
+        catch (err) {
+            this.log('No log file currently exists.', true);
+        }
     },
 
     /**

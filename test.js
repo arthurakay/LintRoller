@@ -18,7 +18,6 @@ var config = {
     ],
 
     jsLint : {
-        file   : './assets/jslint.js',
         optons : {}
     },
 
