@@ -1,0 +1,31 @@
+{
+    "name"         : "lint-roller",
+    "preferGlobal" : "true",
+    "version"      : "2.0.0",
+
+    "author"      : "Arthur Kay <art@akawebdesign.com>",
+    "description" : "Lint your JavaScript code and output errors to a log file. Convenient for pre-commit hooks and build systems to maintain code quality.",
+
+    "contributors" : [
+        {
+            "name"  : "Arthur Kay",
+            "email" : "art@akawebdesign.com"
+        }
+    ],
+
+    "scripts" : {
+
+    },
+
+    "main" : "./PhantomLint.js",
+
+    "repository" : {
+        "type" : "git",
+        "url"  : "https://github.com/arthurakay/PhantomLint"
+    },
+
+    "dependencies" : {
+        "jshint" : ">=0.9.1",
+        "jslint" : ">=0.1.9"
+    }
+}

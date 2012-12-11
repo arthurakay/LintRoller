@@ -18,10 +18,11 @@
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
-*/
+ */
 
-var filesystem = require('fs'),
-    JSLINT, JSHINT;
+var fs = require('fs'),
+    JSLINT = require('jslint'),
+    JSHINT = require('jshint');
 
 /**
  * @class PhantomLint
@@ -62,7 +63,7 @@ PhantomLint = {
      *   - "options" is an object containing the optional lint flags.
      */
     jsLint : {
-        file : 'assets/jslint.js',
+        file : './assets/jslint.js',
 
         options : {
             nomen    : true, //if names may have dangling _
@@ -70,7 +71,10 @@ PhantomLint = {
             sloppy   : true, //if the 'use strict'; pragma is optional
             vars     : true, //if multiple var statements per function should be allowed
             white    : true, //if sloppy whitespace is tolerated
-            undef    : true  //if variables can be declared out of order
+            undef    : true, //if variables can be declared out of order,
+            node     : true, //if Node.js globals should be predefined
+            browser  : true, //if the standard browser globals should be predefined
+            stupid   : true  //if really stupid practices are tolerated... namely blocking synchronous operations
         }
     },
 
@@ -83,7 +87,7 @@ PhantomLint = {
      *
      */
     jsHint : {
-        file : 'assets/jshint-master/src/stable/jshint.js',
+        file : './assets/jshint-master/src/stable/jshint.js',
 
         options : {
 
@@ -96,7 +100,6 @@ PhantomLint = {
      */
     logFile : 'error_log.txt',
 
-
     /**
      * Call this method to de-lint your JavaScript codebase.
      */
@@ -105,17 +108,17 @@ PhantomLint = {
         this.initConfigs(config);
 
         if (this.jsLint) {
-            this.log('Loading JSLint... ' + phantom.injectJs(this.jsLint.file), true);
+            this.log('Loading JSLint... ', true);
             this.linters.push(JSLINT);
         }
 
         if (this.jsHint) {
-            this.log('Loading JSHint... ' + phantom.injectJs(this.jsHint.file), true);
+            this.log('Loading JSHint... ', true);
             this.linters.push(JSHINT);
         }
 
         if (!JSLINT && !JSHINT) {
-            phantom.exit(1);
+            process.exit(1);
         }
 
         this.parseTree(config.filepaths);
@@ -126,7 +129,6 @@ PhantomLint = {
         this.announceSuccess();
     },
 
-
     /**
      * @private
      */
@@ -136,7 +138,6 @@ PhantomLint = {
      * @private
      */
     linters : [],
-
 
     /**
      * @private
@@ -196,7 +197,7 @@ PhantomLint = {
         }
 
         this.log('\nFix Your Errors! Check the log file for more information.\n\n', true);
-        phantom.exit(1);
+        process.exit(1);
     },
 
     /**
@@ -204,14 +205,14 @@ PhantomLint = {
      */
     announceSuccess : function () {
         this.log('\nSuccessfully linted yo shit.\n\n', true);
-        phantom.exit(0);
+        process.exit(0);
     },
 
     /**
      * @private
      */
     getFiles : function (path) {
-        var tree = filesystem.list(path);
+        var tree = fs.readdirSync(path);
 
         this.log('\nFILES FOUND AT PATH: ' + path);
         this.log(tree);
@@ -262,7 +263,9 @@ PhantomLint = {
                     var spacer = '    ',
                         childPath, childTree;
 
-                    if (filesystem.isFile(currPath + list[x])) {
+                    var stats = fs.statSync(currPath + list[x]);
+
+                    if (stats.isFile()) {
                         this.log(spacer + list[x] + ' IS A FILE');
                         /*
                          * We only want JS files
@@ -338,7 +341,7 @@ PhantomLint = {
         for (j; j < this.files.length; j++) {
 
             file = this.files[j];
-            js = filesystem.read(file);
+            js = fs.readFileSync(file, 'utf8');
 
             var i = 0,
                 result = JSLINT(js, this.jsLint.options),
@@ -384,7 +387,7 @@ PhantomLint = {
         for (j; j < this.files.length; j++) {
 
             file = this.files[j];
-            js = filesystem.read(file);
+            js = fs.readFileSync(file, 'utf8');
 
             var i = 0,
                 result = JSHINT(js, this.jsHint.options),
@@ -424,17 +427,22 @@ PhantomLint = {
      * @private
      */
     logToFile : function (errorList) {
-        this.log('\nWriting ' + (errorList.length / 6) + ' errors to log file.', true);
-        filesystem.touch(this.logFile);
-
-        var stream = filesystem.open(this.logFile, 'w');
-
-        var i = 0;
-        for (i; i < errorList.length; i++) {
-            stream.writeLine(errorList[i]);
+        try {
+            this.log('\nDeleting old log file.', true);
+            fs.unlinkSync(this.logFile);
+        }
+        catch (err) {
+            this.log('\nNo log file currently exists.', true);
         }
 
-        stream.close();
+        this.log('\nWriting ' + (errorList.length / 6) + ' errors to new log file.', true);
+
+        var header = 'PhantomLint : Output for ' + new Date() + '\n\n';
+        errorList.splice(0, 0, header);
+
+        var output = errorList.join().replace(/,/g, '\n');
+
+        fs.writeFileSync(this.logFile, output);
     },
 
     /**
@@ -446,3 +454,5 @@ PhantomLint = {
         }
     }
 };
+
+module.exports = PhantomLint;
