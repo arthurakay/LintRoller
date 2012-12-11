@@ -1,5 +1,5 @@
 {
-    "name"         : "lint-roller",
+    "name"         : "LintRoller",
     "preferGlobal" : "true",
     "version"      : "2.0.0",
 
@@ -17,7 +17,7 @@
 
     },
 
-    "main" : "./PhantomLint.js",
+    "main" : "./LintRoller.js",
 
     "repository" : {
         "type" : "git",

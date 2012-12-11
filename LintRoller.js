@@ -1,25 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>The source code</title>
-  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
-  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
-  <style type="text/css">
-    .highlight { display: block; background-color: #ddd; }
-  </style>
-  <script type="text/javascript">
-    function highlight() {
-      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
-    }
-  </script>
-</head>
-<body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
+/*
  Copyright (c) 2011 Arthur Kay
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the &quot;Software&quot;), to deal
+ of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is furnished
@@ -28,135 +11,133 @@
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
-*/
+ */
 
-var filesystem = require('fs'),
-    JSLINT, JSHINT;
+var fs = require('fs'),
+    JSLINT = require('jslint'),
+    JSHINT = require('jshint').JSHINT;
 
-<span id='PhantomLint'>/**
-</span> * @class PhantomLint
+/**
+ * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 1.3.0
+ * @version 2.0.0
  *
  * GitHub Project: https://github.com/arthurakay/PhantomLint
  */
-PhantomLint = {
-<span id='PhantomLint-cfg-filepaths'>    /**
-</span>     * @cfg {Array} filepaths
+LintRoller = {
+    /**
+     * @cfg {Array} filepaths
      * REQUIRED. An array of relative filepaths to the folders containing JS files
      */
 
-<span id='PhantomLint-cfg-exclusions'>    /**
-</span>     * @cfg {Array} exclusions
+    /**
+     * @cfg {Array} exclusions
      * REQUIRED. An array of relative filepaths to the folders containing JS files that should NOT be linted
      */
 
-<span id='PhantomLint-cfg-verbose'>    /**
-</span>     * @cfg
+    /**
+     * @cfg
      * True to show verbose ouput in the terminal.
      */
     verbose : true,
 
-<span id='PhantomLint-cfg-stopOnFirstError'>    /**
-</span>     * @cfg
+    /**
+     * @cfg
      * True to stop linting your code when the first error is encountered.
      */
     stopOnFirstError : true,
 
-<span id='PhantomLint-cfg-jsLint'>    /**
-</span>     * @cfg
-     * An object containing &quot;file&quot; and &quot;options&quot; properties (False to disable usage.).
+    /**
+     * @cfg
+     * An object containing "file" and "options" properties (False to disable usage.).
      *
-     *   - &quot;file&quot; is a relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js).
-     *   - &quot;options&quot; is an object containing the optional lint flags.
+     *   - "file" is a relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js).
+     *   - "options" is an object containing the optional lint flags.
      */
     jsLint : {
-        file : 'assets/jslint.js',
-
         options : {
             nomen    : true, //if names may have dangling _
             plusplus : true, //if increment/decrement should be allowed
             sloppy   : true, //if the 'use strict'; pragma is optional
             vars     : true, //if multiple var statements per function should be allowed
             white    : true, //if sloppy whitespace is tolerated
-            undef    : true  //if variables can be declared out of order
+            undef    : true, //if variables can be declared out of order,
+            node     : true, //if Node.js globals should be predefined
+            browser  : true, //if the standard browser globals should be predefined
+            stupid   : true  //if really stupid practices are tolerated... namely blocking synchronous operations
         }
     },
 
-<span id='PhantomLint-cfg-jsHint'>    /**
-</span>     * @cfg
-     * An object containing &quot;file&quot; and &quot;options&quot; properties (False to disable usage.).
+    /**
+     * @cfg
+     * An object containing "file" and "options" properties (False to disable usage.).
      *
-     *   - &quot;file&quot; is a relative filepath to the local JSHint file to use (defaults to ./assets/jshint-master/src/stable/jshint.js).
-     *   - &quot;options&quot; is an object containing the optional lint flags.
+     *   - "file" is a relative filepath to the local JSHint file to use (defaults to ./assets/jshint-master/src/stable/jshint.js).
+     *   - "options" is an object containing the optional lint flags.
      *
      */
     jsHint : {
-        file : 'assets/jshint-master/src/stable/jshint.js',
-
         options : {
 
         }
     },
 
-<span id='PhantomLint-cfg-logFile'>    /**
-</span>     * @cfg
+    /**
+     * @cfg
      * A relative filepath to where error messages will be logged.
      */
     logFile : 'error_log.txt',
 
-
-<span id='PhantomLint-method-init'>    /**
-</span>     * Call this method to de-lint your JavaScript codebase.
+    /**
+     * Call this method to de-lint your JavaScript codebase.
      */
     init : function (config) {
         //APPLY CONFIG OPTIONS
         this.initConfigs(config);
 
         if (this.jsLint) {
-            this.log('Loading JSLint... ' + phantom.injectJs(this.jsLint.file), true);
+            this.log('Loading JSLint... ', true);
             this.linters.push(JSLINT);
         }
 
         if (this.jsHint) {
-            this.log('Loading JSHint... ' + phantom.injectJs(this.jsHint.file), true);
+            this.log('Loading JSHint... ', true);
             this.linters.push(JSHINT);
         }
 
-        if (!JSLINT &amp;&amp; !JSHINT) {
-            phantom.exit(1);
+        if (!JSLINT && !JSHINT) {
+            process.exit(1);
         }
 
         this.parseTree(config.filepaths);
         this.log('\nFilesystem has been parsed. Looping through available files...');
 
+        this.clearLogFile();
         this.lintFiles();
 
         this.announceSuccess();
     },
 
-
-<span id='PhantomLint-property-files'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     files : [],
 
-<span id='PhantomLint-property-linters'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     linters : [],
 
-
-<span id='PhantomLint-method-initConfigs'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     initConfigs : function (config) {
         var i;
@@ -187,8 +168,8 @@ PhantomLint = {
         }
     },
 
-<span id='PhantomLint-method-applyLintOptions'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     applyLintOptions : function (linter, options) {
         var i;
@@ -204,8 +185,8 @@ PhantomLint = {
         }
     },
 
-<span id='PhantomLint-method-announceErrors'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     announceErrors : function (errorList) {
         if (typeof this.logFile === 'string') {
@@ -213,22 +194,22 @@ PhantomLint = {
         }
 
         this.log('\nFix Your Errors! Check the log file for more information.\n\n', true);
-        phantom.exit(1);
+        process.exit(1);
     },
 
-<span id='PhantomLint-method-announceSuccess'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     announceSuccess : function () {
         this.log('\nSuccessfully linted yo shit.\n\n', true);
-        phantom.exit(0);
+        process.exit(0);
     },
 
-<span id='PhantomLint-method-getFiles'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     getFiles : function (path) {
-        var tree = filesystem.list(path);
+        var tree = fs.readdirSync(path);
 
         this.log('\nFILES FOUND AT PATH: ' + path);
         this.log(tree);
@@ -236,8 +217,8 @@ PhantomLint = {
         return tree;
     },
 
-<span id='PhantomLint-method-parseTree'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     parseTree : function (pathConfig) {
         var i = 0,
@@ -251,17 +232,17 @@ PhantomLint = {
             path = pathConfig; //should be an array of strings
         }
 
-        for (i; i &lt; path.length; i++) {
+        for (i; i < path.length; i++) {
             var currPath = path[i];
+            var exclude = false;
+
             this.log('\n*** currPath: ' + currPath);
 
             if (this.exclusions) {
                 this.log('Checking exclusion paths...');
 
                 var j = 0;
-                var exclude = false;
-
-                for (j; j &lt; this.exclusions.length; j++) {
+                for (j; j < this.exclusions.length; j++) {
                     if (currPath === this.exclusions[j]) {
                         exclude = true;
                     }
@@ -275,11 +256,13 @@ PhantomLint = {
                 var list = this.getFiles(currPath);
                 var x = 0;
 
-                for (x; x &lt; list.length; x++) {
+                for (x; x < list.length; x++) {
                     var spacer = '    ',
                         childPath, childTree;
 
-                    if (filesystem.isFile(currPath + list[x])) {
+                    var stats = fs.statSync(currPath + list[x]);
+
+                    if (stats.isFile()) {
                         this.log(spacer + list[x] + ' IS A FILE');
                         /*
                          * We only want JS files
@@ -313,12 +296,15 @@ PhantomLint = {
         }
     },
 
-<span id='PhantomLint-method-lintFiles'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     lintFiles : function () {
         var x = 0,
+            jsLintErrors = [],
+            jsHintErrors = [],
             errorList = [],
+            errors = 0,
             j,
             linter;
 
@@ -327,35 +313,44 @@ PhantomLint = {
         /*
          * Loop through all files with each linter
          */
-        for (x; x &lt; this.linters.length; x++) {
+        for (x; x < this.linters.length; x++) {
             linter = this.linters[x];
 
             if (linter === JSLINT) {
                 this.log('Running JSLint against code...', false);
-                errorList = this.runJSLint(errorList);
+                jsLintErrors = this.runJSLint();
+
+                errors += jsLintErrors.length;
+                jsLintErrors.splice(0,0, '=============== Running JSLint... ===============\n\n');
             }
             else if (linter === JSHINT) {
                 this.log('Running JSHint against code...', false);
-                errorList = this.runJSHint(errorList);
+                jsHintErrors = this.runJSHint();
+
+                errors += jsHintErrors.length;
+                jsHintErrors.splice(0,0, '=============== Running JSHint... ===============\n\n');
             }
         }
 
-        if (errorList.length &gt; 0) {
+        if (errors > 0) {
+            errorList = errorList.concat(jsLintErrors, jsHintErrors);
             this.announceErrors(errorList);
         }
+
     },
 
-<span id='PhantomLint-method-runJSLint'>    /**
-</span>     * @private
+    /**
+     * @private
      */
-    runJSLint : function (errorList) {
+    runJSLint : function () {
         var j = 0,
+            errorList = [],
             file, js;
 
-        for (j; j &lt; this.files.length; j++) {
+        for (j; j < this.files.length; j++) {
 
             file = this.files[j];
-            js = filesystem.read(file);
+            js = fs.readFileSync(file, 'utf8');
 
             var i = 0,
                 result = JSLINT(js, this.jsLint.options),
@@ -363,7 +358,7 @@ PhantomLint = {
                 error;
 
             if (!result) {
-                for (i; i &lt; totalErrors; i++) {
+                for (i; i < totalErrors; i++) {
                     error = JSLINT.errors[i];
 
                     if (error) {
@@ -382,7 +377,7 @@ PhantomLint = {
                     }
                 }
 
-                if (this.stopOnFirstError &amp;&amp; errorList.length &gt; 0) {
+                if (this.stopOnFirstError && errorList.length > 0) {
                     this.announceErrors(errorList);
                 }
             }
@@ -391,25 +386,26 @@ PhantomLint = {
         return errorList;
     },
 
-<span id='PhantomLint-method-runJSHint'>    /**
-</span>     * @private
+    /**
+     * @private
      */
-    runJSHint : function (errorList) {
+    runJSHint : function () {
         var j = 0,
+            errorList = [],
             file, js;
 
-        for (j; j &lt; this.files.length; j++) {
+        for (j; j < this.files.length; j++) {
 
             file = this.files[j];
-            js = filesystem.read(file);
+            js = fs.readFileSync(file, 'utf8');
 
             var i = 0,
-                result = JSHINT(js, this.jsHint.options),
+                result = JSHINT.jshint(js, this.jsHint.options),
                 totalErrors = JSHINT.errors.length,
                 error;
 
             if (!result) {
-                for (i; i &lt; totalErrors; i++) {
+                for (i; i < totalErrors; i++) {
                     error = JSHINT.errors[i];
 
                     if (error) {
@@ -428,7 +424,7 @@ PhantomLint = {
                     }
                 }
 
-                if (this.stopOnFirstError &amp;&amp; errorList.length &gt; 0) {
+                if (this.stopOnFirstError && errorList.length > 0) {
                     this.announceErrors(errorList);
                 }
             }
@@ -437,31 +433,39 @@ PhantomLint = {
         return errorList;
     },
 
-<span id='PhantomLint-method-logToFile'>    /**
-</span>     * @private
+    /**
+     * @private
      */
     logToFile : function (errorList) {
-        this.log('\nWriting ' + (errorList.length / 6) + ' errors to log file.', true);
-        filesystem.touch(this.logFile);
+        this.log('\nWriting ' + ((errorList.length  - this.linters.length ) / 6) + ' errors to new log file.', true);
 
-        var stream = filesystem.open(this.logFile, 'w');
+        var header = 'LintRoller : Output for ' + new Date() + '\n\n';
+        errorList.splice(0, 0, header);
 
-        var i = 0;
-        for (i; i &lt; errorList.length; i++) {
-            stream.writeLine(errorList[i]);
-        }
+        var output = errorList.join().replace(/,/g, '\n');
 
-        stream.close();
+        fs.writeFileSync(this.logFile, output);
     },
 
-<span id='PhantomLint-method-log'>    /**
-</span>     * @private
+    clearLogFile : function() {
+        try {
+            this.log('\nDeleting old log file...', true);
+            fs.unlinkSync(this.logFile);
+            this.log('Done.', true);
+        }
+        catch (err) {
+            this.log('No log file currently exists.', true);
+        }
+    },
+
+    /**
+     * @private
      */
     log : function (msg, override) {
         if (this.verbose || override) {
             console.log(msg);
         }
     }
-};</pre>
-</body>
-</html>
+};
+
+module.exports = LintRoller;

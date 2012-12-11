@@ -1,4 +1,4 @@
-var PhantomLint = require('./PhantomLint.js');
+var LintRoller = require('./LintRoller.js');
 
 var config = {
     verbose          : false,
@@ -25,4 +25,4 @@ var config = {
     jsHint : false
 };
 
-PhantomLint.init(config);
+LintRoller.init(config);
