@@ -1,10 +1,21 @@
-Version 1.3.0 (December 7, 2012)
+===============
+  VERSION 2.x
+===============
+
+Version 2.0.0 (December 11, 2012) - BREAKING CHANGES ALL AROUND!
+  - Changed name from "PhantomLint" to "LintRoller"
   - added JSHint support
   - optionally disable available linters (JSLint or JSHint)
-  - refactored configuration of JSLint file and options (*** BREAKING CHANGE ***)
+  - refactored configuration of linter options
   - refactored application of init() configuration
   - updated test.js
+  - added documentation via JSDuck
+  - removed dependency on PhantomJS - now running on Node.js as it's more ubiquitous, and installation via NPM is easier
 
+
+===============
+  VERSION 1.x
+===============
 
 Version 1.2.1 (June 7, 2012)
   - updates to example

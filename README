@@ -1,38 +1,11 @@
 OVERVIEW:
-  - PhantomLint is an add-on to Phantom.js that recursively dives into a directory and lints your JavaScript files.
+  - LintRoller is a Node.js module that recursively dives into a directory and lints your JavaScript files.
   - Available linting platforms include JSLint and JSHint.
   - An example shell script (test.sh, test.bat) is provided to run the test.js demo.
 
 
 
-CONFIG OPTIONS:
-  - filepaths (Array)
-    REQUIRED. An array of relative filepaths to the directories containing JS files
-
-  - exclusions (Array)
-    An array of relative filepaths to the directories containing JS files that should be ignored
-
-  - jsLint (Object/Boolean)
-    An object containing "file" and "options" properties (False to disable usage.).
-      - "file" is a relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js).
-      - "options" is an object containing the optional lint flags.
-
-  - jsHint (Object/Boolean)
-    An object containing "file" and "options" properties (False to disable usage.).
-      - "file" is a relative filepath to the local JSHint file to use (defaults to ./assets/jshint-master/src/stable/jshint.js).
-      - "options" is an object containing the optional lint flags.
-
-  - verbose (Boolean)
-    Defaults to true.
-
-  - stopOnFirstError (Boolean)
-    Defaults to true.
-
-  - logFile (String)
-    A relative filepath to where the output error log should go.
-    (defaults to ./error_log.txt)
+For full documentation, view /docs/index.html in your browser.
 
 
 
-NOTES:
-  - The PhantomJS binary included in this repo is the Mac OS X static build

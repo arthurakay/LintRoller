@@ -1,3 +1,5 @@
+var LintRoller = require('./LintRoller.js');
+
 var config = {
     verbose          : false,
     stopOnFirstError : false,
@@ -10,11 +12,12 @@ var config = {
 
     //but ignore anything in these folders
     exclusions : [
-        './assets/jshint-master/'
+        './node_modules/',
+        './assets/',
+        './docs/'
     ],
 
     jsLint : {
-        file   : './assets/jslint.js',
         optons : {}
     },
 
@@ -22,5 +25,4 @@ var config = {
     jsHint : false
 };
 
-phantom.injectJs('PhantomLint.js');
-PhantomLint.init(config);
+LintRoller.init(config);
