@@ -26,6 +26,7 @@
 
     "dependencies" : {
         "jshint" : ">=0.9.1",
-        "jslint" : ">=0.1.9"
+        "jslint" : ">=0.1.9",
+        "fs"     : ">=0.0.0"
     }
 }
