@@ -59,7 +59,6 @@ LintRoller = {
      * @cfg
      * An object containing "file" and "options" properties (False to disable usage.).
      *
-     *   - "file" is a relative filepath to the local JSLint file to use (defaults to ./assets/jslint.js).
      *   - "options" is an object containing the optional lint flags.
      */
     jsLint : {
@@ -80,7 +79,6 @@ LintRoller = {
      * @cfg
      * An object containing "file" and "options" properties (False to disable usage.).
      *
-     *   - "file" is a relative filepath to the local JSHint file to use (defaults to ./assets/jshint-master/src/stable/jshint.js).
      *   - "options" is an object containing the optional lint flags.
      *
      */
