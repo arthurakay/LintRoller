@@ -57,7 +57,7 @@ LintRoller = {
 
     /**
      * @cfg
-     * An object containing "file" and "options" properties (False to disable usage.).
+     * An object containing an "options" property (False to disable usage.).
      *
      *   - "options" is an object containing the optional lint flags.
      */
@@ -77,7 +77,7 @@ LintRoller = {
 
     /**
      * @cfg
-     * An object containing "file" and "options" properties (False to disable usage.).
+     * An object containing an "options" property (False to disable usage.).
      *
      *   - "options" is an object containing the optional lint flags.
      *
