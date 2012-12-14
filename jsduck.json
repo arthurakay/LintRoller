@@ -1,0 +1,9 @@
+{
+    "--title"  : "LintRoller API Docs",
+    "--output" : "docs",
+
+    "--" : [
+        "src/LintRoller.js",
+        "src/util.js"
+    ]
+}

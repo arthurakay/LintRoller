@@ -1,6 +1,8 @@
 /**
+ * @class LintRoller.util
+ * @singleton
  *
- * @type {Object}
+ * Some additional utilities for cleaning up JavaScript lint.
  */
 util = {
 
@@ -14,8 +16,10 @@ util = {
 
 
     /**
+     * A utility that will eliminate all "Mixed spaces with tabs." warnings by replacing tab characters with spaces.
      *
-     * @param spacingChars {int} The number of spaces to replace a tab
+     * @param {Object} config A configuration object
+     * @param {Number} spacingChars The number of spaces to replace a tab
      */
     replaceTabsWithSpaces : function (config, spacingChars) {
         this.parent.initConfigs(config);
@@ -30,9 +34,18 @@ util = {
         this.parent.log(
             'Found ' + offendingFiles.length +
                 ' files matching the error "' + msg +
-                '" between ' + this.parent.linters.length + ' linters.',
+                '" between ' + this.parent.linters.length + ' linters.\n',
             true
         );
+
+        if (offendingFiles.length === 0) {
+            this.parent.log(
+                'LintRoller has found 0 offending files. Your usage of tabs/spaces is acceptable!\n',
+                true
+            );
+
+            process.exit(0);
+        }
 
         try {
             this.fixOffendingFiles(offendingFiles, spacingChars);
@@ -47,7 +60,7 @@ util = {
         }
 
         this.parent.log(
-            'LintRoller has attempted to replace all tabs with ' + spacingChars + ' spaces.',
+            'LintRoller has attempted to replace all tabs with ' + spacingChars + ' spaces.\n',
             true
         );
 

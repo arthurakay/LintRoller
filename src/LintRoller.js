@@ -24,7 +24,7 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.0.0
+ * @version 2.1.0
  *
  * GitHub Project: https://github.com/arthurakay/LintRoller
  */
@@ -323,14 +323,14 @@ LintRoller = {
 
             if (linter === this.jsLint.lib) {
                 this.log('Running JSLint against code...', false);
-                jsLintErrors = this.runJSLint();
+                jsLintErrors = this.runLinter(this.jsLint);
 
                 errors += jsLintErrors.length;
                 jsLintErrors.splice(0, 0, '=============== Running JSLint... ===============\n\n');
             }
             else if (linter === this.jsHint.lib) {
                 this.log('Running JSHint against code...', false);
-                jsHintErrors = this.runJSHint();
+                jsHintErrors = this.runLinter(this.jsHint);
 
                 errors += jsHintErrors.length;
                 jsHintErrors.splice(0, 0, '=============== Running JSHint... ===============\n\n');
@@ -347,7 +347,7 @@ LintRoller = {
     /**
      * @private
      */
-    runJSLint : function () {
+    runLinter : function (linter) {
         var j = 0,
             errorList = [],
             file, js;
@@ -358,13 +358,13 @@ LintRoller = {
             js = this.fs.readFileSync(file, 'utf8');
 
             var i = 0,
-                result = this.jsLint.lib(js, this.jsLint.options),
-                totalErrors = this.jsLint.lib.errors.length,
+                result = linter.lib(js, linter.options),
+                totalErrors = linter.lib.errors.length,
                 error;
 
             if (!result) {
                 for (i; i < totalErrors; i++) {
-                    error = this.jsLint.lib.errors[i];
+                    error = linter.lib.errors[i];
 
                     if (error) {
                         errorList.push(
@@ -391,52 +391,6 @@ LintRoller = {
         return errorList;
     },
 
-    /**
-     * @private
-     */
-    runJSHint : function () {
-        var j = 0,
-            errorList = [],
-            file, js;
-
-        for (j; j < this.files.length; j++) {
-
-            file = this.files[j];
-            js = this.fs.readFileSync(file, 'utf8');
-
-            var i = 0,
-                result = this.jsHint.lib.jshint(js, this.jsHint.options),
-                totalErrors = this.jsHint.lib.errors.length,
-                error;
-
-            if (!result) {
-                for (i; i < totalErrors; i++) {
-                    error = this.jsHint.lib.errors[i];
-
-                    if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
-
-                        if (this.stopOnFirstError) {
-                            break;
-                        }
-                    }
-                }
-
-                if (this.stopOnFirstError && errorList.length > 0) {
-                    this.announceErrors(errorList);
-                }
-            }
-        }
-
-        return errorList;
-    },
 
     /**
      * @private
