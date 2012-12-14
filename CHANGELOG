@@ -2,6 +2,14 @@
   VERSION 2.x
 ===============
 
+Version 2.1.0 (December 14, 2012) - BREAKING CHANGES
+  - Moved code into /src/ folder
+  - Added "util" namespace and utilities
+  - Moved examples into /examples/ folder
+  - Updated documentation
+  - General refactoring
+
+
 Version 2.0.0 (December 11, 2012) - BREAKING CHANGES ALL AROUND!
   - Changed name from "PhantomLint" to "LintRoller"
   - added JSHint support
