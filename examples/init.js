@@ -1,4 +1,4 @@
-var LintRoller = require('./LintRoller.js');
+var LintRoller = require('../src/LintRoller');
 
 var config = {
     verbose          : false,

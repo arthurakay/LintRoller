@@ -1,4 +1,4 @@
 @echo off
 
 cls
-node test.js
+node init.js

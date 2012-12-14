@@ -20,17 +20,13 @@
  THE SOFTWARE.
  */
 
-var fs = require('fs'),
-    JSLINT = require('jslint'),
-    JSHINT = require('jshint').JSHINT;
-
 /**
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
  * @version 2.0.0
  *
- * GitHub Project: https://github.com/arthurakay/PhantomLint
+ * GitHub Project: https://github.com/arthurakay/LintRoller
  */
 LintRoller = {
     /**
@@ -62,6 +58,8 @@ LintRoller = {
      *   - "options" is an object containing the optional lint flags.
      */
     jsLint : {
+        lib : null,
+
         options : {
             nomen    : true, //if names may have dangling _
             plusplus : true, //if increment/decrement should be allowed
@@ -83,6 +81,8 @@ LintRoller = {
      *
      */
     jsHint : {
+        lib : null,
+
         options : {
 
         }
@@ -100,20 +100,6 @@ LintRoller = {
     init : function (config) {
         //APPLY CONFIG OPTIONS
         this.initConfigs(config);
-
-        if (this.jsLint) {
-            this.log('Loading JSLint... ', true);
-            this.linters.push(JSLINT);
-        }
-
-        if (this.jsHint) {
-            this.log('Loading JSHint... ', true);
-            this.linters.push(JSHINT);
-        }
-
-        if (!JSLINT && !JSHINT) {
-            process.exit(1);
-        }
 
         this.parseTree(config.filepaths);
         this.log('\nFilesystem has been parsed. Looping through available files...');
@@ -164,6 +150,27 @@ LintRoller = {
 
             }
         }
+
+        this.setLinters();
+    },
+
+    /**
+     * @private
+     */
+    setLinters : function () {
+        if (this.jsLint) {
+            this.log('Loading JSLint... ', true);
+            this.linters.push(this.jsLint.lib);
+        }
+
+        if (this.jsHint) {
+            this.log('Loading JSHint... ', true);
+            this.linters.push(this.jsHint.lib);
+        }
+
+        if (this.linters.length === 0) {
+            process.exit(1);
+        }
     },
 
     /**
@@ -207,7 +214,7 @@ LintRoller = {
      * @private
      */
     getFiles : function (path) {
-        var tree = fs.readdirSync(path);
+        var tree = this.fs.readdirSync(path);
 
         this.log('\nFILES FOUND AT PATH: ' + path);
         this.log(tree);
@@ -258,7 +265,7 @@ LintRoller = {
                     var spacer = '    ',
                         childPath, childTree;
 
-                    var stats = fs.statSync(currPath + list[x]);
+                    var stats = this.fs.statSync(currPath + list[x]);
 
                     if (stats.isFile()) {
                         this.log(spacer + list[x] + ' IS A FILE');
@@ -314,19 +321,19 @@ LintRoller = {
         for (x; x < this.linters.length; x++) {
             linter = this.linters[x];
 
-            if (linter === JSLINT) {
+            if (linter === this.jsLint.lib) {
                 this.log('Running JSLint against code...', false);
                 jsLintErrors = this.runJSLint();
 
                 errors += jsLintErrors.length;
-                jsLintErrors.splice(0,0, '=============== Running JSLint... ===============\n\n');
+                jsLintErrors.splice(0, 0, '=============== Running JSLint... ===============\n\n');
             }
-            else if (linter === JSHINT) {
+            else if (linter === this.jsHint.lib) {
                 this.log('Running JSHint against code...', false);
                 jsHintErrors = this.runJSHint();
 
                 errors += jsHintErrors.length;
-                jsHintErrors.splice(0,0, '=============== Running JSHint... ===============\n\n');
+                jsHintErrors.splice(0, 0, '=============== Running JSHint... ===============\n\n');
             }
         }
 
@@ -348,16 +355,16 @@ LintRoller = {
         for (j; j < this.files.length; j++) {
 
             file = this.files[j];
-            js = fs.readFileSync(file, 'utf8');
+            js = this.fs.readFileSync(file, 'utf8');
 
             var i = 0,
-                result = JSLINT(js, this.jsLint.options),
-                totalErrors = JSLINT.errors.length,
+                result = this.jsLint.lib(js, this.jsLint.options),
+                totalErrors = this.jsLint.lib.errors.length,
                 error;
 
             if (!result) {
                 for (i; i < totalErrors; i++) {
-                    error = JSLINT.errors[i];
+                    error = this.jsLint.lib.errors[i];
 
                     if (error) {
                         errorList.push(
@@ -395,16 +402,16 @@ LintRoller = {
         for (j; j < this.files.length; j++) {
 
             file = this.files[j];
-            js = fs.readFileSync(file, 'utf8');
+            js = this.fs.readFileSync(file, 'utf8');
 
             var i = 0,
-                result = JSHINT.jshint(js, this.jsHint.options),
-                totalErrors = JSHINT.errors.length,
+                result = this.jsHint.lib.jshint(js, this.jsHint.options),
+                totalErrors = this.jsHint.lib.errors.length,
                 error;
 
             if (!result) {
                 for (i; i < totalErrors; i++) {
-                    error = JSHINT.errors[i];
+                    error = this.jsHint.lib.errors[i];
 
                     if (error) {
                         errorList.push(
@@ -435,20 +442,20 @@ LintRoller = {
      * @private
      */
     logToFile : function (errorList) {
-        this.log('\nWriting ' + ((errorList.length  - this.linters.length ) / 6) + ' errors to new log file.', true);
+        this.log('\nWriting ' + ((errorList.length - this.linters.length ) / 6) + ' errors to new log file.', true);
 
         var header = 'LintRoller : Output for ' + new Date() + '\n\n';
         errorList.splice(0, 0, header);
 
         var output = errorList.join().replace(/,/g, '\n');
 
-        fs.writeFileSync(this.logFile, output);
+        this.fs.writeFileSync(this.logFile, output);
     },
 
-    clearLogFile : function() {
+    clearLogFile : function () {
         try {
             this.log('\nDeleting old log file...', true);
-            fs.unlinkSync(this.logFile);
+            this.fs.unlinkSync(this.logFile);
             this.log('Done.', true);
         }
         catch (err) {
@@ -464,6 +471,26 @@ LintRoller = {
             console.log(msg);
         }
     }
+
 };
+
+var initModules = function (me) {
+    //filesystem API
+    me.fs = require('fs');
+
+    if (me.jsLint) {
+        me.jsLint.lib = require('jslint');
+    }
+
+    if (me.jsHint) {
+        me.jsHint.lib = require('jshint').JSHINT;
+    }
+
+    //other utilities
+    var util = require('./util');
+    me.util = util.init(me);
+};
+
+initModules(LintRoller);
 
 module.exports = LintRoller;
