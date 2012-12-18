@@ -4,6 +4,8 @@
 
     "--" : [
         "src/LintRoller.js",
-        "src/util.js"
+        "src/util.js",
+        "src/jsLint.js",
+        "src/jsHint.js"
     ]
 }

@@ -41,9 +41,9 @@
 </span> * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.0.0
+ * @version 2.2.0
  *
- * GitHub Project: https://github.com/arthurakay/LintRoller
+ * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
 LintRoller = {
 <span id='LintRoller-cfg-filepaths'>    /**
@@ -68,42 +68,11 @@ LintRoller = {
      */
     stopOnFirstError : true,
 
-<span id='LintRoller-cfg-jsLint'>    /**
+<span id='LintRoller-cfg-linters'>    /**
 </span>     * @cfg
-     * An object containing an &quot;options&quot; property (False to disable usage.).
-     *
-     *   - &quot;options&quot; is an object containing the optional lint flags.
+     * An array of lint module config objects. See the classes under LintRoller.linters for more information.
      */
-    jsLint : {
-        lib : null,
-
-        options : {
-            nomen    : true, //if names may have dangling _
-            plusplus : true, //if increment/decrement should be allowed
-            sloppy   : true, //if the 'use strict'; pragma is optional
-            vars     : true, //if multiple var statements per function should be allowed
-            white    : true, //if sloppy whitespace is tolerated
-            undef    : true, //if variables can be declared out of order,
-            node     : true, //if Node.js globals should be predefined
-            browser  : true, //if the standard browser globals should be predefined
-            stupid   : true  //if really stupid practices are tolerated... namely blocking synchronous operations
-        }
-    },
-
-<span id='LintRoller-cfg-jsHint'>    /**
-</span>     * @cfg
-     * An object containing an &quot;options&quot; property (False to disable usage.).
-     *
-     *   - &quot;options&quot; is an object containing the optional lint flags.
-     *
-     */
-    jsHint : {
-        lib : null,
-
-        options : {
-
-        }
-    },
+    linters : [],
 
 <span id='LintRoller-cfg-logFile'>    /**
 </span>     * @cfg
@@ -132,11 +101,6 @@ LintRoller = {
      */
     files : [],
 
-<span id='LintRoller-property-linters'>    /**
-</span>     * @private
-     */
-    linters : [],
-
 <span id='LintRoller-method-initConfigs'>    /**
 </span>     * @private
      */
@@ -150,14 +114,8 @@ LintRoller = {
         for (i in config) {
             if (config.hasOwnProperty(i)) {
                 switch (i) {
-                    case 'jsLint':
-                    case 'jsHint':
-                        if (typeof config[i] !== 'boolean') {
-                            this.applyLintOptions(this[i], config.options);
-                            break;
-                        }
-
-                        this[i] = config[i];
+                    case 'linters':
+                        this.setLinters(config[i]);
                         break;
 
                     default:
@@ -167,45 +125,31 @@ LintRoller = {
 
             }
         }
-
-        this.setLinters();
     },
 
 <span id='LintRoller-method-setLinters'>    /**
 </span>     * @private
      */
-    setLinters : function () {
-        if (this.jsLint) {
-            this.log('Loading JSLint... ', true);
-            this.linters.push(this.jsLint.lib);
+    setLinters : function (linters) {
+        if (!(linters instanceof Array) || linters.length === 0) {
+                process.exit(1);
         }
 
-        if (this.jsHint) {
-            this.log('Loading JSHint... ', true);
-            this.linters.push(this.jsHint.lib);
-        }
+        var i = 0,
+            linter, linterCfg;
 
-        if (this.linters.length === 0) {
-            process.exit(1);
-        }
-    },
+        for (i; i&lt;linters.length; i++) {
+            linterCfg = linters[i];
 
-<span id='LintRoller-method-applyLintOptions'>    /**
-</span>     * @private
-     */
-    applyLintOptions : function (linter, options) {
-        var i;
+            this.log('Initializing linter: ' + linterCfg.type, true);
 
-        if (!options) {
-            return false;
-        }
+            linter = require('./' + linterCfg.type);
+            linter.applyLintOptions(linterCfg.options);
 
-        for (i in options) {
-            if (options.hasOwnProperty(i)) {
-                linter.options[i] = options[i];
-            }
+            this.linters.push(linter);
         }
     },
+
 
 <span id='LintRoller-method-announceErrors'>    /**
 </span>     * @private
@@ -323,8 +267,7 @@ LintRoller = {
      */
     lintFiles : function () {
         var x = 0,
-            jsLintErrors = [],
-            jsHintErrors = [],
+            newErrors = [],
             errorList = [],
             errors = 0,
             j,
@@ -338,121 +281,15 @@ LintRoller = {
         for (x; x &lt; this.linters.length; x++) {
             linter = this.linters[x];
 
-            if (linter === this.jsLint.lib) {
-                this.log('Running JSLint against code...', false);
-                jsLintErrors = this.runJSLint();
+            newErrors = linter.runLinter(this);
+            errors += newErrors.length - 1; //ignore the first record, which is a title
 
-                errors += jsLintErrors.length;
-                jsLintErrors.splice(0, 0, '=============== Running JSLint... ===============\n\n');
-            }
-            else if (linter === this.jsHint.lib) {
-                this.log('Running JSHint against code...', false);
-                jsHintErrors = this.runJSHint();
-
-                errors += jsHintErrors.length;
-                jsHintErrors.splice(0, 0, '=============== Running JSHint... ===============\n\n');
-            }
+            errorList = errorList.concat(newErrors);
         }
 
         if (errors &gt; 0) {
-            errorList = errorList.concat(jsLintErrors, jsHintErrors);
             this.announceErrors(errorList);
         }
-
-    },
-
-<span id='LintRoller-method-runJSLint'>    /**
-</span>     * @private
-     */
-    runJSLint : function () {
-        var j = 0,
-            errorList = [],
-            file, js;
-
-        for (j; j &lt; this.files.length; j++) {
-
-            file = this.files[j];
-            js = this.fs.readFileSync(file, 'utf8');
-
-            var i = 0,
-                result = this.jsLint.lib(js, this.jsLint.options),
-                totalErrors = this.jsLint.lib.errors.length,
-                error;
-
-            if (!result) {
-                for (i; i &lt; totalErrors; i++) {
-                    error = this.jsLint.lib.errors[i];
-
-                    if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
-
-                        if (this.stopOnFirstError) {
-                            break;
-                        }
-                    }
-                }
-
-                if (this.stopOnFirstError &amp;&amp; errorList.length &gt; 0) {
-                    this.announceErrors(errorList);
-                }
-            }
-        }
-
-        return errorList;
-    },
-
-<span id='LintRoller-method-runJSHint'>    /**
-</span>     * @private
-     */
-    runJSHint : function () {
-        var j = 0,
-            errorList = [],
-            file, js;
-
-        for (j; j &lt; this.files.length; j++) {
-
-            file = this.files[j];
-            js = this.fs.readFileSync(file, 'utf8');
-
-            var i = 0,
-                result = this.jsHint.lib.jshint(js, this.jsHint.options),
-                totalErrors = this.jsHint.lib.errors.length,
-                error;
-
-            if (!result) {
-                for (i; i &lt; totalErrors; i++) {
-                    error = this.jsHint.lib.errors[i];
-
-                    if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
-
-                        if (this.stopOnFirstError) {
-                            break;
-                        }
-                    }
-                }
-
-                if (this.stopOnFirstError &amp;&amp; errorList.length &gt; 0) {
-                    this.announceErrors(errorList);
-                }
-            }
-        }
-
-        return errorList;
     },
 
 <span id='LintRoller-method-logToFile'>    /**
@@ -494,14 +331,6 @@ LintRoller = {
 var initModules = function (me) {
     //filesystem API
     me.fs = require('fs');
-
-    if (me.jsLint) {
-        me.jsLint.lib = require('jslint');
-    }
-
-    if (me.jsHint) {
-        me.jsHint.lib = require('jshint').JSHINT;
-    }
 
     //other utilities
     var util = require('./util');

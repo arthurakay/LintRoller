@@ -1,28 +1,45 @@
-var JSHINT = require('jshint').JSHINT;
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">var JSHINT = require('jshint').JSHINT;
 
-/**
- * @class LintRoller.linters.JSHint
+<span id='LintRoller-linters-JSHint'>/**
+</span> * @class LintRoller.linters.JSHint
  *
  * Created automatically if a { type : 'jsHint' } config is passed to the linters array.
  */
 var linter = {
 
-    /**
-     * @property
+<span id='LintRoller-linters-JSHint-property-lib'>    /**
+</span>     * @property
      * JSHint
      */
     lib : JSHINT,
 
-    /**
-     * @cfg
+<span id='LintRoller-linters-JSHint-cfg-options'>    /**
+</span>     * @cfg
      * An object containing lint validation options
      */
     options : {
 
     },
 
-    /**
-     * @private
+<span id='LintRoller-linters-JSHint-method-applyLintOptions'>    /**
+</span>     * @private
      */
     applyLintOptions : function (options) {
         var i;
@@ -38,8 +55,8 @@ var linter = {
         }
     },
 
-    /**
-     * @private
+<span id='LintRoller-linters-JSHint-method-runLinter'>    /**
+</span>     * @private
      */
     runLinter : function (parentModule) {
         var j = 0,
@@ -48,7 +65,7 @@ var linter = {
 
         parentModule.log('Running JSHint against code...', false);
 
-        for (j; j < parentModule.files.length; j++) {
+        for (j; j &lt; parentModule.files.length; j++) {
 
             file = parentModule.files[j];
             js = parentModule.fs.readFileSync(file, 'utf8');
@@ -59,7 +76,7 @@ var linter = {
                 error;
 
             if (!result) {
-                for (i; i < totalErrors; i++) {
+                for (i; i &lt; totalErrors; i++) {
                     error = this.lib.errors[i];
 
                     if (error) {
@@ -78,7 +95,7 @@ var linter = {
                     }
                 }
 
-                if (parentModule.stopOnFirstError && errorList.length > 0) {
+                if (parentModule.stopOnFirstError &amp;&amp; errorList.length &gt; 0) {
                     parentModule.announceErrors(errorList);
                 }
             }
@@ -89,4 +106,6 @@ var linter = {
 
 };
 
-module.exports = linter;
+module.exports = linter;</pre>
+</body>
+</html>

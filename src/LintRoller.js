@@ -24,9 +24,9 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.1.0
+ * @version 2.2.0
  *
- * GitHub Project: https://github.com/arthurakay/LintRoller
+ * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
 LintRoller = {
     /**
@@ -53,7 +53,7 @@ LintRoller = {
 
     /**
      * @cfg
-     * An array of lint module config objects
+     * An array of lint module config objects. See the classes under LintRoller.linters for more information.
      */
     linters : [],
 

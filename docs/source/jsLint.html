@@ -1,20 +1,37 @@
-var JSLINT = require('jslint');
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">var JSLINT = require('jslint');
 
-/**
- * @class LintRoller.linters.JSLint
+<span id='LintRoller-linters-JSLint'>/**
+</span> * @class LintRoller.linters.JSLint
  *
  * Created automatically if a { type : 'jsLint' } config is passed to the linters array.
  */
 var linter = {
 
-    /**
-     * @property
+<span id='LintRoller-linters-JSLint-property-lib'>    /**
+</span>     * @property
      * JSLint
      */
     lib : JSLINT,
 
-    /**
-     * @cfg
+<span id='LintRoller-linters-JSLint-cfg-options'>    /**
+</span>     * @cfg
      * An object containing lint validation options
      */
     options : {
@@ -29,8 +46,8 @@ var linter = {
         stupid   : true  //if really stupid practices are tolerated... namely blocking synchronous operations
     },
 
-    /**
-     * @private
+<span id='LintRoller-linters-JSLint-method-applyLintOptions'>    /**
+</span>     * @private
      */
     applyLintOptions : function (options) {
         var i;
@@ -46,8 +63,8 @@ var linter = {
         }
     },
 
-    /**
-     * @private
+<span id='LintRoller-linters-JSLint-method-runLinter'>    /**
+</span>     * @private
      */
     runLinter : function (parentModule) {
         var j = 0,
@@ -56,7 +73,7 @@ var linter = {
 
         parentModule.log('Running JSLint against code...', false);
 
-        for (j; j < parentModule.files.length; j++) {
+        for (j; j &lt; parentModule.files.length; j++) {
 
             file = parentModule.files[j];
             js = parentModule.fs.readFileSync(file, 'utf8');
@@ -67,7 +84,7 @@ var linter = {
                 error;
 
             if (!result) {
-                for (i; i < totalErrors; i++) {
+                for (i; i &lt; totalErrors; i++) {
                     error = this.lib.errors[i];
 
                     if (error) {
@@ -86,7 +103,7 @@ var linter = {
                     }
                 }
 
-                if (parentModule.stopOnFirstError && errorList.length > 0) {
+                if (parentModule.stopOnFirstError &amp;&amp; errorList.length &gt; 0) {
                     parentModule.announceErrors(errorList);
                 }
             }
@@ -97,4 +114,6 @@ var linter = {
 
 };
 
-module.exports = linter;
+module.exports = linter;</pre>
+</body>
+</html>
