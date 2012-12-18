@@ -79,7 +79,7 @@ util = {
         for (i = 0; i < this.parent.linters.length; i++) {
             linter = this.parent.linters[i];
 
-            newFiles = this.findLintErrors(linter, this.getLintOptions(linter), msg);
+            newFiles = this.findLintErrors(linter.lib, linter.options, msg);
             offendingFiles = offendingFiles.concat(newFiles);
         }
 
@@ -107,22 +107,6 @@ util = {
 
             this.parent.fs.writeFileSync(file, js, 'utf8');
         }
-    },
-
-
-    /**
-     * @private
-     */
-    getLintOptions : function (linter) {
-        if (linter === this.parent.jsLint.lib) {
-            return this.parent.jsLint.options;
-        }
-
-        if (linter === this.parent.jsHint.lib) {
-            return this.parent.jsHint.options;
-        }
-
-        return {};
     },
 
 

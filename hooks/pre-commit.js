@@ -16,12 +16,11 @@ var config = {
         '../docs/'
     ],
 
-    jsLint : {
-        optons : {}
-    },
-
-    //optionally disable a linter
-    jsHint : false
+    linters : [
+        {
+            type : 'jsLint'
+        }
+    ]
 };
 
 try {

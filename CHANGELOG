@@ -2,6 +2,12 @@
   VERSION 2.x
 ===============
 
+Version 2.2.0 (December 17, 2012) - BREAKING CHANGES
+  - Changed configuration of linters - now using "linters" array
+  - Broke supported linters into specific modules
+  - Updated examples
+
+
 Version 2.1.0 (December 14, 2012) - BREAKING CHANGES
   - Moved code into /src/ folder
   - Added "util" namespace and utilities

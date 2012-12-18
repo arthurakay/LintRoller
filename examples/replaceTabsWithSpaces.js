@@ -1,8 +1,8 @@
 var LintRoller = require('../src/LintRoller.js');
 
 var config = {
-    verbose          : false,
-    logFile          : './error.log',
+    verbose    : false,
+    logFile    : './error.log',
 
     //recursively include JS files in these folders
     filepaths  : [
@@ -14,6 +14,12 @@ var config = {
         '../node_modules/',
         '../assets/',
         '../docs/'
+    ],
+
+    linters : [
+        {
+            type : 'jsLint'
+        }
     ]
 };
 

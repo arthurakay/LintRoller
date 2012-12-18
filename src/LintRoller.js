@@ -53,40 +53,9 @@ LintRoller = {
 
     /**
      * @cfg
-     * An object containing an "options" property (False to disable usage.).
-     *
-     *   - "options" is an object containing the optional lint flags.
+     * An array of lint module config objects
      */
-    jsLint : {
-        lib : null,
-
-        options : {
-            nomen    : true, //if names may have dangling _
-            plusplus : true, //if increment/decrement should be allowed
-            sloppy   : true, //if the 'use strict'; pragma is optional
-            vars     : true, //if multiple var statements per function should be allowed
-            white    : true, //if sloppy whitespace is tolerated
-            undef    : true, //if variables can be declared out of order,
-            node     : true, //if Node.js globals should be predefined
-            browser  : true, //if the standard browser globals should be predefined
-            stupid   : true  //if really stupid practices are tolerated... namely blocking synchronous operations
-        }
-    },
-
-    /**
-     * @cfg
-     * An object containing an "options" property (False to disable usage.).
-     *
-     *   - "options" is an object containing the optional lint flags.
-     *
-     */
-    jsHint : {
-        lib : null,
-
-        options : {
-
-        }
-    },
+    linters : [],
 
     /**
      * @cfg
@@ -118,11 +87,6 @@ LintRoller = {
     /**
      * @private
      */
-    linters : [],
-
-    /**
-     * @private
-     */
     initConfigs : function (config) {
         var i;
 
@@ -133,14 +97,8 @@ LintRoller = {
         for (i in config) {
             if (config.hasOwnProperty(i)) {
                 switch (i) {
-                    case 'jsLint':
-                    case 'jsHint':
-                        if (typeof config[i] !== 'boolean') {
-                            this.applyLintOptions(this[i], config.options);
-                            break;
-                        }
-
-                        this[i] = config[i];
+                    case 'linters':
+                        this.setLinters(config[i]);
                         break;
 
                     default:
@@ -150,45 +108,31 @@ LintRoller = {
 
             }
         }
-
-        this.setLinters();
     },
 
     /**
      * @private
      */
-    setLinters : function () {
-        if (this.jsLint) {
-            this.log('Loading JSLint... ', true);
-            this.linters.push(this.jsLint.lib);
+    setLinters : function (linters) {
+        if (!(linters instanceof Array) || linters.length === 0) {
+                process.exit(1);
         }
 
-        if (this.jsHint) {
-            this.log('Loading JSHint... ', true);
-            this.linters.push(this.jsHint.lib);
-        }
+        var i = 0,
+            linter, linterCfg;
 
-        if (this.linters.length === 0) {
-            process.exit(1);
-        }
-    },
+        for (i; i<linters.length; i++) {
+            linterCfg = linters[i];
 
-    /**
-     * @private
-     */
-    applyLintOptions : function (linter, options) {
-        var i;
+            this.log('Initializing linter: ' + linterCfg.type, true);
 
-        if (!options) {
-            return false;
-        }
+            linter = require('./' + linterCfg.type);
+            linter.applyLintOptions(linterCfg.options);
 
-        for (i in options) {
-            if (options.hasOwnProperty(i)) {
-                linter.options[i] = options[i];
-            }
+            this.linters.push(linter);
         }
     },
+
 
     /**
      * @private
@@ -306,8 +250,7 @@ LintRoller = {
      */
     lintFiles : function () {
         var x = 0,
-            jsLintErrors = [],
-            jsHintErrors = [],
+            newErrors = [],
             errorList = [],
             errors = 0,
             j,
@@ -321,76 +264,16 @@ LintRoller = {
         for (x; x < this.linters.length; x++) {
             linter = this.linters[x];
 
-            if (linter === this.jsLint.lib) {
-                this.log('Running JSLint against code...', false);
-                jsLintErrors = this.runLinter(this.jsLint);
+            newErrors = linter.runLinter(this);
+            errors += newErrors.length - 1; //ignore the first record, which is a title
 
-                errors += jsLintErrors.length;
-                jsLintErrors.splice(0, 0, '=============== Running JSLint... ===============\n\n');
-            }
-            else if (linter === this.jsHint.lib) {
-                this.log('Running JSHint against code...', false);
-                jsHintErrors = this.runLinter(this.jsHint);
-
-                errors += jsHintErrors.length;
-                jsHintErrors.splice(0, 0, '=============== Running JSHint... ===============\n\n');
-            }
+            errorList = errorList.concat(newErrors);
         }
 
         if (errors > 0) {
-            errorList = errorList.concat(jsLintErrors, jsHintErrors);
             this.announceErrors(errorList);
         }
-
     },
-
-    /**
-     * @private
-     */
-    runLinter : function (linter) {
-        var j = 0,
-            errorList = [],
-            file, js;
-
-        for (j; j < this.files.length; j++) {
-
-            file = this.files[j];
-            js = this.fs.readFileSync(file, 'utf8');
-
-            var i = 0,
-                result = linter.lib(js, linter.options),
-                totalErrors = linter.lib.errors.length,
-                error;
-
-            if (!result) {
-                for (i; i < totalErrors; i++) {
-                    error = linter.lib.errors[i];
-
-                    if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
-
-                        if (this.stopOnFirstError) {
-                            break;
-                        }
-                    }
-                }
-
-                if (this.stopOnFirstError && errorList.length > 0) {
-                    this.announceErrors(errorList);
-                }
-            }
-        }
-
-        return errorList;
-    },
-
 
     /**
      * @private
@@ -431,14 +314,6 @@ LintRoller = {
 var initModules = function (me) {
     //filesystem API
     me.fs = require('fs');
-
-    if (me.jsLint) {
-        me.jsLint.lib = require('jslint');
-    }
-
-    if (me.jsHint) {
-        me.jsHint.lib = require('jshint').JSHINT;
-    }
 
     //other utilities
     var util = require('./util');
