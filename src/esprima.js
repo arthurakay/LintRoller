@@ -8,7 +8,7 @@ var linter = {
      * @cfg
      */
     options : {
-
+        //tolerant: true
     },
 
     /**
@@ -43,7 +43,6 @@ var linter = {
             file = parentModule.files[j];
             js = parentModule.fs.readFileSync(file, 'utf8');
 
-            //TODO: make this work... is that possible?
             var i = 0,
                 result = this.lib.parse(js, this.options),
                 totalErrors = (result.errors) ? result.errors.length : 0,
@@ -51,14 +50,14 @@ var linter = {
 
             if (!result) {
                 for (i; i < totalErrors; i++) {
-                    error = this.lib.errors[i];
+                    error = result.errors[i];
 
                     if (error) {
                         errorList.push(
                             file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
+                            '    Line #: ' + error.lineNumber,
+                            //'    Char #: ' + error.character,
+                            '    Reason: ' + error.message,
                             '',
                             ''
                         );
