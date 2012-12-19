@@ -1,6 +1,11 @@
 OVERVIEW:
   - LintRoller is a Node.js module that recursively dives into a directory and lints your JavaScript files.
-  - Available linting platforms include JSLint and JSHint.
+
+  - Available linting platforms include:
+    - JSLint
+    - JSHint
+    - Esprima
+
   - An example shell script (test.sh, test.bat) is provided to run the test.js demo.
 
 
