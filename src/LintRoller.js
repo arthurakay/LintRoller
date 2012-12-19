@@ -24,7 +24,7 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.2.0
+ * @version 2.2.1
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
@@ -96,16 +96,12 @@ LintRoller = {
 
         for (i in config) {
             if (config.hasOwnProperty(i)) {
-                switch (i) {
-                    case 'linters':
-                        this.setLinters(config[i]);
-                        break;
-
-                    default:
-                        this[i] = config[i];
-                        break;
+                if (i === 'linters') {
+                    this.setLinters(config[i]);
                 }
-
+                else {
+                    this[i] = config[i];
+                }
             }
         }
     },
@@ -115,24 +111,23 @@ LintRoller = {
      */
     setLinters : function (linters) {
         if (!(linters instanceof Array) || linters.length === 0) {
-                process.exit(1);
+            process.exit(1);
         }
 
         var i = 0,
             linter, linterCfg;
 
-        for (i; i<linters.length; i++) {
+        for (i; i < linters.length; i++) {
             linterCfg = linters[i];
 
             this.log('Initializing linter: ' + linterCfg.type, true);
 
-            linter = require('./' + linterCfg.type);
+            linter = require('./linters/' + linterCfg.type);
             linter.applyLintOptions(linterCfg.options);
 
             this.linters.push(linter);
         }
     },
-
 
     /**
      * @private

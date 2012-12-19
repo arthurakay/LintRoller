@@ -2,6 +2,12 @@
   VERSION 2.x
 ===============
 
+Version 2.2.1 (December 18, 2012) - BREAKING CHANGES
+  - Added support for Esprima
+  - Moved linter modules into sub-folder
+  - Updated documentation and examples
+
+
 Version 2.2.0 (December 17, 2012) - BREAKING CHANGES
   - Changed configuration of linters - now using "linters" array
   - Broke supported linters into specific modules

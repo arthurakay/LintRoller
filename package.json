@@ -1,7 +1,7 @@
 {
     "name"         : "lintroller",
     "preferGlobal" : "true",
-    "version"      : "2.2.0",
+    "version"      : "2.2.1",
 
     "author"      : "Arthur Kay <art@akawebdesign.com>",
     "description" : "Lint your JavaScript code and output errors to a log file. Convenient for pre-commit hooks and build systems to maintain code quality.",
@@ -25,8 +25,9 @@
     },
 
     "dependencies" : {
-        "jshint" : ">=0.9.1",
-        "jslint" : ">=0.1.9",
-        "fs"     : ">=0.0.0"
+        "esprima" : ">=1.0.2",
+        "jshint"  : ">=0.9.1",
+        "jslint"  : ">=0.1.9",
+        "fs"      : ">=0.0.0"
     }
 }
