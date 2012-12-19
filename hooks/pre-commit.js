@@ -19,6 +19,12 @@ var config = {
     linters : [
         {
             type : 'jsLint'
+        },
+        {
+            type : 'jsHint'
+        },
+        {
+            type : 'esprima'
         }
     ]
 };
