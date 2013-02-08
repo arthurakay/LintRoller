@@ -14,6 +14,61 @@ util = {
         return this;
     },
 
+    /**
+     * @private
+     */
+    utilInit : function(config) {
+        this.parent.initConfigs(config);
+        this.parent.parseTree(config.filepaths);
+
+        this.parent.log('\nFilesystem has been parsed. Looping through available files...', true);
+    },
+
+    /**
+     * A utility that will remove all Byte-Order-Marks (BOM - \uFEFF) from a file
+     */
+    removeBOM : function(config) {
+        this.utilInit(config);
+
+        var msg = 'Unsafe character.';
+        var offendingFiles = this.locateOffenders(msg);
+
+        //HOW MANY ERRORS?!?
+        this.parent.log(
+            'Found ' + offendingFiles.length +
+            ' files matching the error "' + msg +
+            '" between ' + this.parent.linters.length + ' linters.\n',
+            true
+        );
+
+        if (offendingFiles.length === 0) {
+            this.parent.log(
+                'LintRoller has found 0 offending files. Your usage of tabs/spaces is acceptable!\n',
+                true
+            );
+
+            process.exit(0);
+        }
+
+        try {
+            this.fixBomFiles(offendingFiles);
+        }
+        catch (e) {
+            this.parent.log(
+                'An error has occurred: ' + e,
+                true
+            );
+
+            process.exit(1);
+        }
+
+        this.parent.log(
+            'LintRoller has attempted to remove all BOM.\n',
+            true
+        );
+
+        process.exit(0);
+    },
 
     /**
      * A utility that will eliminate all "Mixed spaces with tabs." warnings by replacing tab characters with spaces.
@@ -22,10 +77,7 @@ util = {
      * @param {Number} spacingChars The number of spaces to replace a tab
      */
     replaceTabsWithSpaces : function (config, spacingChars) {
-        this.parent.initConfigs(config);
-        this.parent.parseTree(config.filepaths);
-
-        this.parent.log('\nFilesystem has been parsed. Looping through available files...', true);
+        this.utilInit(config);
 
         var msg = 'Mixed spaces and tabs.';
         var offendingFiles = this.locateOffenders(msg);
@@ -104,6 +156,24 @@ util = {
             js = this.parent.fs.readFileSync(file, 'utf8');
 
             js = js.replace(/\t/g, spaces);
+
+            this.parent.fs.writeFileSync(file, js, 'utf8');
+        }
+    },
+
+
+    /**
+     * @private
+     */
+    fixBomFiles : function(offendingFiles) {
+        var i = 0,
+            file, js;
+
+        for (i=0; i < offendingFiles.length; i++) {
+            file = offendingFiles[i];
+            js = this.parent.fs.readFileSync(file, 'utf8');
+
+            js = js.replace(/\uFEFF/g, '');
 
             this.parent.fs.writeFileSync(file, js, 'utf8');
         }

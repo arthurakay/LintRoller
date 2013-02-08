@@ -2,6 +2,11 @@
   VERSION 2.x
 ===============
 
+Version 2.2.2 (February 8, 2013)
+  - Added removeBom() utility and example
+  - Updated documentation and examples
+
+
 Version 2.2.1 (December 18, 2012) - BREAKING CHANGES
   - Added support for Esprima
   - Moved linter modules into sub-folder
