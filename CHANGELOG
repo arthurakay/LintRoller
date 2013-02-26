@@ -1,6 +1,9 @@
 ===============
   VERSION 2.x
 ===============
+Version 2.2.3 (February 26, 2013)
+  - Added support for Travis CI (namely the "test" script)
+  - Updated hooks
 
 Version 2.2.2 (February 8, 2013)
   - Added removeBom() utility and example

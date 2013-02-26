@@ -13,8 +13,7 @@ function checkError {
 echo "*** Checking JavaScript for lint... ***"
 
 #run LintRunner
-cd hooks
-node pre-commit.js
+node hooks/pre-commit.js
 
 checkError $?
 
