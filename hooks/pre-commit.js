@@ -1,3 +1,6 @@
+//Assumes the script is run from the module's root
+process.chdir('hooks');
+
 var LintRoller = require('../src/lintroller');
 
 var config = {
