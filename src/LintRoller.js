@@ -122,7 +122,7 @@ LintRoller = {
 
             this.log('Initializing linter: ' + linterCfg.type, true);
 
-            linter = require('./linters/' + linterCfg.type);
+            linter = require('./linters/' + linterCfg.type.toLowerCase());
             linter.applyLintOptions(linterCfg.options);
 
             this.linters.push(linter);
