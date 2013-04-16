@@ -60,9 +60,14 @@ var LintRoller = {
 
     /**
      * @cfg
-     * A relative filepath to where error messages will be logged.
+     * An object containing:
+     *   - "name": the relative filepath to where error messages will be logged
+     *   - "type": the type of output ("text", "json", or "xml")
      */
-    logFile : 'error_log.txt',
+    logFile : {
+        name : 'error_log.txt',
+        type : 'text'
+    },
 
     /**
      * Call this method to de-lint your JavaScript codebase.
@@ -100,6 +105,11 @@ var LintRoller = {
                 if (i === 'linters') {
                     this.setLinters(config[i]);
                 }
+                else if (i === 'logFile') {
+                    //TODO: hard-coding this for now... may revisit later
+                    this.logFile.name = config[i].name;
+                    this.logFile.type = config[i].type;
+                }
                 else {
                     this[i] = config[i];
                 }
@@ -125,6 +135,7 @@ var LintRoller = {
 
             linter = require('./linters/' + linterCfg.type.toLowerCase());
             linter.applyLintOptions(linterCfg.options);
+            linter.name = linterCfg.type.toLowerCase();
 
             this.linters.push(linter);
         }
@@ -134,7 +145,7 @@ var LintRoller = {
      * @private
      */
     announceErrors : function (errorList) {
-        if (typeof this.logFile === 'string') {
+        if (typeof this.logFile.name === 'string') {
             this.logToFile(errorList);
         }
 
@@ -247,9 +258,8 @@ var LintRoller = {
     lintFiles : function () {
         var x = 0,
             newErrors = [],
-            errorList = [],
+            errorList = {},
             errors = 0,
-            j,
             linter;
 
         this.log('\n' + this.files.length + ' JS files found.', true);
@@ -261,10 +271,12 @@ var LintRoller = {
             linter = this.linters[x];
 
             newErrors = linter.runLinter(this);
-            errors += newErrors.length - 1; //ignore the first record, which is a title
+            errors += newErrors.length; //ignore the first record, which is a title
 
-            errorList = errorList.concat(newErrors);
+            errorList[linter.name] = newErrors;
         }
+
+        errorList.totalErrors = errors;
 
         if (errors > 0) {
             this.announceErrors(errorList);
@@ -275,20 +287,64 @@ var LintRoller = {
      * @private
      */
     logToFile : function (errorList) {
-        this.log('\nWriting ' + ((errorList.length - this.linters.length ) / 6) + ' errors to new log file.', true);
+        errorList.title = 'LintRoller : Output for ' + new Date();
+        this.log('\nWriting ' + errorList.totalErrors + ' errors to new log file.', true);
 
-        var header = 'LintRoller : Output for ' + new Date() + '\n\n';
-        errorList.splice(0, 0, header);
+        var output;
 
-        var output = errorList.join().replace(/,/g, '\n');
+        switch (this.logFile.type.toUpperCase()) {
+            case 'JSON':
+                output = JSON.stringify(errorList);
+                break;
 
-        this.fs.writeFileSync(this.logFile, output);
+            case 'XML':
+                this.log('\nNot currently supporting XML output...');
+                //break;
+                return;
+
+            default:
+                output = errorList.title + '\n\n';
+                output += this.formatTextOutput(errorList);
+                break;
+        }
+
+        this.fs.writeFileSync(this.logFile.name, output);
+    },
+
+    formatTextOutput : function(errorList) {
+        var output = '',
+            i, x;
+
+        for (i in errorList) {
+            if (errorList.hasOwnProperty(i)) {
+                switch(i) {
+                    case 'jslint':
+                    case 'jshint':
+                    case 'esprima':
+                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+
+                        for (x = 0; x < errorList[i].length; x++) {
+                            var error = errorList[i][x];
+                            output += error.file + '\n' +
+                                      '    Line #: ' + error.line + '\n' +
+                                      '    Char #: ' + error.character + '\n' +
+                                      '    Reason: ' + error.reason + '\n\n';
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return output;
     },
 
     clearLogFile : function () {
         try {
             this.log('\nDeleting old log file...', true);
-            this.fs.unlinkSync(this.logFile);
+            this.fs.unlinkSync(this.logFile.name);
             this.log('Done.', true);
         }
         catch (err) {

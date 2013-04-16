@@ -44,7 +44,7 @@ var linter = {
      */
     runLinter : function (parentModule) {
         var j = 0,
-            errorList = ['=============== Running JSHint... ===============\n\n'],
+            errorList = [],
             file, js;
 
         parentModule.log('Running JSHint against code...', false);
@@ -64,14 +64,12 @@ var linter = {
                     error = this.lib.errors[i];
 
                     if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
+                        errorList.push({
+                            file      : file,
+                            line      : error.line,
+                            character : error.character,
+                            reason    : error.reason
+                        });
 
                         if (parentModule.stopOnFirstError) {
                             break;

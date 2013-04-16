@@ -40,7 +40,7 @@ var linter = {
      */
     runLinter : function (parentModule) {
         var j = 0,
-            errorList = ['=============== Running Esprima... ===============\n\n'],
+            errorList = [],
             file, js;
 
         parentModule.log('Running Esprima against code...', false);
@@ -63,14 +63,12 @@ var linter = {
                         error = result.errors[i];
 
                         if (error) {
-                            errorList.push(
-                                file,
-                                '    Line #: ' + error.lineNumber,
-                                '    Char #: ' + error.column,
-                                '    Reason: ' + error.message,
-                                '',
-                                ''
-                            );
+                            errorList.push({
+                                file      : file,
+                                line      : error.lineNumber,
+                                character : error.column,
+                                reason    : error.message
+                            });
 
                             if (parentModule.stopOnFirstError) {
                                 break;
@@ -84,14 +82,12 @@ var linter = {
                 }
             }
             catch (caughtError) {
-                errorList.push(
-                    file,
-                    '    Line #: ' + caughtError.lineNumber,
-                    '    Char #: ' + caughtError.column,
-                    '    Reason: ' + caughtError.message,
-                    '',
-                    ''
-                );
+                errorList.push({
+                    file      : file,
+                    line      : caughtError.lineNumber,
+                    character : caughtError.column,
+                    reason    : caughtError.message
+                });
 
                 if (parentModule.stopOnFirstError) {
                     parentModule.announceErrors(errorList);

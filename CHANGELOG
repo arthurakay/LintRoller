@@ -1,6 +1,13 @@
 ===============
   VERSION 2.x
 ===============
+Version 2.2.5 ()
+  - Strict mode!
+  - Now supporting multiple output formats - text, json (and soon XML?)
+
+Version 2.2.4
+  - Various fixes for CI build and NPM. Nothing exciting.
+
 Version 2.2.3 (February 26, 2013)
   - Added support for Travis CI (namely the "test" script)
   - Updated hooks
