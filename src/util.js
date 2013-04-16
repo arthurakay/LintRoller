@@ -4,7 +4,8 @@
  *
  * Some additional utilities for cleaning up JavaScript lint.
  */
-util = {
+"use strict";
+var util = {
 
     /**
      * @private

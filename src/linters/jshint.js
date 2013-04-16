@@ -1,3 +1,4 @@
+"use strict";
 var JSHINT = require('jshint').JSHINT;
 
 /**

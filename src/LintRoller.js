@@ -28,7 +28,8 @@
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
-LintRoller = {
+"use strict";
+var LintRoller = {
     /**
      * @cfg {Array} filepaths
      * REQUIRED. An array of relative filepaths to the folders containing JS files

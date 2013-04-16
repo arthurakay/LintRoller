@@ -8,12 +8,12 @@ var config = {
     stopOnFirstError : false,
 
     //recursively include JS files in these folders
-    filepaths  : [
+    filepaths        : [
         '../'
     ],
 
     //but ignore anything in these folders
-    exclusions : [
+    exclusions       : [
         '../node_modules/',
         '../assets/',
         '../docs/'
@@ -21,10 +21,18 @@ var config = {
 
     linters : [
         {
-            type : 'jsLint'
+            type    : 'jsLint',
+            options : {
+                sloppy : false,
+                node   : true
+            }
         },
         {
-            type : 'jsHint'
+            type    : 'jsHint',
+            options : {
+                strict : true,
+                node   : true
+            }
         },
         {
             type : 'esprima'
