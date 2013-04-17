@@ -15,7 +15,8 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">var JSLINT = require('jslint');
+  <pre class="prettyprint lang-js">&quot;use strict&quot;;
+var JSLINT = require('jslint');
 
 <span id='LintRoller-linters-JSLint'>/**
 </span> * @class LintRoller.linters.JSLint
@@ -68,7 +69,7 @@ var linter = {
      */
     runLinter : function (parentModule) {
         var j = 0,
-            errorList = ['=============== Running JSLint... ===============\n\n'],
+            errorList = [],
             file, js;
 
         parentModule.log('Running JSLint against code...', false);
@@ -88,14 +89,12 @@ var linter = {
                     error = this.lib.errors[i];
 
                     if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
+                        errorList.push({
+                            file      : file,
+                            line      : error.line,
+                            character : error.character,
+                            reason    : error.reason
+                        });
 
                         if (parentModule.stopOnFirstError) {
                             break;

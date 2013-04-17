@@ -1,9 +1,10 @@
 ===============
   VERSION 2.x
 ===============
-Version 2.2.5 ()
+Version 2.2.5 () - BREAKING CHANGES
   - Strict mode!
   - Now supporting multiple output formats - text, json (and soon XML?)
+  - updated documentation
 
 Version 2.2.4
   - Various fixes for CI build and NPM. Nothing exciting.

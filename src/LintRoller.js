@@ -24,7 +24,7 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.2.4
+ * @version 2.2.5
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
@@ -61,6 +61,7 @@ var LintRoller = {
     /**
      * @cfg
      * An object containing:
+     *
      *   - "name": the relative filepath to where error messages will be logged
      *   - "type": the type of output ("text", "json", or "xml")
      */
