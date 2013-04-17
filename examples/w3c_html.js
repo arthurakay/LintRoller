@@ -3,6 +3,9 @@ var LintRoller = require('../src/LintRoller.js');
 var config = {
     verbose    : false,
 
+    stopOnFirstError: false,
+    regex : /\.html$/i, //only look at HTML files
+
     logFile          : {
         name : './error.log',
         type : 'text'

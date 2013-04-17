@@ -43,8 +43,8 @@ var linter = {
      * @private
      */
     runLinter : function (parentModule, callback) {
-        var j = 0,
-            errorList = [];
+        var errorList = [],
+            i;
 
         parentModule.log('Running W3C_HTML against code...', false);
 
@@ -57,16 +57,22 @@ var linter = {
                     output   : 'json',
                     callback : function (error) {
                         if (error) {
-                            errorList.push({
-                                file    : file,
-                                //line      : 0,
-                                //character : 0,
-                                reason  : error.message,
-                                context : error.context
-                            });
+                            for (i = 0; i < error.messages.length; i++) {
+                                var err = error.messages[i];
 
-                            if (parentModule.stopOnFirstError) {
-                                next(true);
+                                if (err.type === 'error') {
+                                    errorList.push({
+                                        file      : file,
+                                        line      : err.lastLine,
+                                        character : err.lastColumn,
+                                        reason    : err.message,
+                                        context   : err.explanation
+                                    });
+
+                                    if (parentModule.stopOnFirstError) {
+                                        next(true);
+                                    }
+                                }
                             }
                         }
 
