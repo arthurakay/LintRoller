@@ -21,14 +21,10 @@ var w3c = require('w3cjs');
 <span id='LintRoller-linters-W3C_HTML'>/**
 </span> * @class LintRoller.linters.W3C_HTML
  *
- * Created automatically if a { type : 'jsLint' } config is passed to the linters array.
+ * Created automatically if a { type : 'w3c_html' } config is passed to the linters array.
  */
 var linter = {
 
-<span id='LintRoller-linters-W3C_HTML-property-lib'>    /**
-</span>     * @property
-     * JSLint
-     */
     lib : w3c,
 
 <span id='LintRoller-linters-W3C_HTML-cfg-options'>    /**
@@ -60,8 +56,8 @@ var linter = {
 </span>     * @private
      */
     runLinter : function (parentModule, callback) {
-        var j = 0,
-            errorList = [];
+        var errorList = [],
+            i;
 
         parentModule.log('Running W3C_HTML against code...', false);
 
@@ -74,16 +70,22 @@ var linter = {
                     output   : 'json',
                     callback : function (error) {
                         if (error) {
-                            errorList.push({
-                                file    : file,
-                                //line      : 0,
-                                //character : 0,
-                                reason  : error.message,
-                                context : error.context
-                            });
+                            for (i = 0; i &lt; error.messages.length; i++) {
+                                var err = error.messages[i];
 
-                            if (parentModule.stopOnFirstError) {
-                                next(true);
+                                if (err.type === 'error') {
+                                    errorList.push({
+                                        file      : file,
+                                        line      : err.lastLine,
+                                        character : err.lastColumn,
+                                        reason    : err.message,
+                                        context   : err.explanation
+                                    });
+
+                                    if (parentModule.stopOnFirstError) {
+                                        next(true);
+                                    }
+                                }
                             }
                         }
 

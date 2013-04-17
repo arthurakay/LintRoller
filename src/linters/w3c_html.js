@@ -4,14 +4,10 @@ var w3c = require('w3cjs');
 /**
  * @class LintRoller.linters.W3C_HTML
  *
- * Created automatically if a { type : 'jsLint' } config is passed to the linters array.
+ * Created automatically if a { type : 'w3c_html' } config is passed to the linters array.
  */
 var linter = {
 
-    /**
-     * @property
-     * JSLint
-     */
     lib : w3c,
 
     /**

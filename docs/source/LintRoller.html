@@ -370,8 +370,9 @@ var LintRoller = {
                         for (x = 0; x &lt; errorList[i].length; x++) {
                             error = errorList[i][x];
                             output += error.file + '\n' +
-                                      '    Message: ' + error.message + '\n' +
-                                      '    Context: ' + error.context + '\n\n';
+                                      '    Line #: ' + error.line + '\n' +
+                                      '    Char #: ' + error.character + '\n' +
+                                      '    Message: ' + error.reason + '\n\n';
                         }
                         break;
 
