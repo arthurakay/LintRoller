@@ -38,64 +38,70 @@ var linter = {
     /**
      * @private
      */
-    runLinter : function (parentModule) {
-        var j = 0,
+    runLinter : function (parentModule, callback) {
+        var me = this,
             errorList = [],
-            file, js;
+            js;
 
         parentModule.log('Running Esprima against code...', false);
 
-        for (j; j < parentModule.files.length; j++) {
+        parentModule.async.each(
+            parentModule.files,
 
-            file = parentModule.files[j];
-            js = parentModule.fs.readFileSync(file, 'utf8');
+            function(file, next) {
+                js = parentModule.fs.readFileSync(file, 'utf8');
 
-            var i = 0,
-                result, totalErrors, error;
+                var i = 0,
+                    result, totalErrors, error;
 
-            try {
-                result = ESPRIMA.parse(js, this.options);
+                try {
+                    result = ESPRIMA.parse(js, me.options);
 
-                if (result.errors) {
-                    totalErrors = result.errors.length;
+                    if (result.errors) {
+                        totalErrors = result.errors.length;
 
-                    for (i; i < totalErrors; i++) {
-                        error = result.errors[i];
+                        for (i; i < totalErrors; i++) {
+                            error = result.errors[i];
 
-                        if (error) {
-                            errorList.push({
-                                file      : file,
-                                line      : error.lineNumber,
-                                character : error.column,
-                                reason    : error.message
-                            });
+                            if (error) {
+                                errorList.push({
+                                    file      : file,
+                                    line      : error.lineNumber,
+                                    character : error.column,
+                                    reason    : error.message
+                                });
 
-                            if (parentModule.stopOnFirstError) {
-                                break;
+                                if (parentModule.stopOnFirstError) {
+                                    next(true);
+                                }
                             }
                         }
                     }
+                }
+                catch (caughtError) {
+                    errorList.push({
+                        file      : file,
+                        line      : caughtError.lineNumber,
+                        character : caughtError.column,
+                        reason    : caughtError.message
+                    });
 
-                    if (parentModule.stopOnFirstError && errorList.length > 0) {
-                        parentModule.announceErrors(errorList);
+                    if (parentModule.stopOnFirstError) {
+                        next(true);
                     }
                 }
-            }
-            catch (caughtError) {
-                errorList.push({
-                    file      : file,
-                    line      : caughtError.lineNumber,
-                    character : caughtError.column,
-                    reason    : caughtError.message
-                });
 
-                if (parentModule.stopOnFirstError) {
+                next(null);
+            },
+
+            function(e) {
+                if (e && parentModule.stopOnFirstError && errorList.length > 0) {
                     parentModule.announceErrors(errorList);
                 }
-            }
-        }
 
-        return errorList;
+                callback(errorList);
+            }
+        );
     }
 
 };

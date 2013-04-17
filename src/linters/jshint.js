@@ -42,48 +42,58 @@ var linter = {
     /**
      * @private
      */
-    runLinter : function (parentModule) {
-        var j = 0,
+    runLinter : function (parentModule, callback) {
+        var me = this,
             errorList = [],
             file, js;
 
         parentModule.log('Running JSHint against code...', false);
 
-        for (j; j < parentModule.files.length; j++) {
+        parentModule.async.each(
+            parentModule.files,
 
-            file = parentModule.files[j];
-            js = parentModule.fs.readFileSync(file, 'utf8');
+            function(file, next) {
+                js = parentModule.fs.readFileSync(file, 'utf8');
 
-            var i = 0,
-                result = this.lib(js, this.options),
-                totalErrors = this.lib.errors.length,
-                error;
+                var i = 0,
+                    result = me.lib(js, me.options),
+                    totalErrors = me.lib.errors.length,
+                    error;
 
-            if (!result) {
-                for (i; i < totalErrors; i++) {
-                    error = this.lib.errors[i];
+                if (!result) {
+                    for (i; i < totalErrors; i++) {
+                        error = me.lib.errors[i];
 
-                    if (error) {
-                        errorList.push({
-                            file      : file,
-                            line      : error.line,
-                            character : error.character,
-                            reason    : error.reason
-                        });
+                        if (error) {
+                            errorList.push({
+                                file      : file,
+                                line      : error.line,
+                                character : error.character,
+                                reason    : error.reason
+                            });
 
-                        if (parentModule.stopOnFirstError) {
-                            break;
+                            if (parentModule.stopOnFirstError) {
+                                break;
+                            }
                         }
+                    }
+
+                    if (parentModule.stopOnFirstError && errorList.length > 0) {
+                        next(true);
                     }
                 }
 
-                if (parentModule.stopOnFirstError && errorList.length > 0) {
+                next(null);
+            },
+
+            function(e) {
+                if (e && parentModule.stopOnFirstError && errorList.length > 0) {
                     parentModule.announceErrors(errorList);
                 }
-            }
-        }
 
-        return errorList;
+                callback(errorList);
+            }
+        );
     }
 
 };

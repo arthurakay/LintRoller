@@ -27,6 +27,8 @@
     "dependencies" : {
         "esprima" : ">=1.0.2",
         "jshint"  : ">=0.9.1",
-        "jslint"  : ">=0.1.9"
+        "jslint"  : ">=0.1.9",
+        "w3cjs"   : ">=0.1.9",
+        "async"   : ">=0.2.7"
     }
 }

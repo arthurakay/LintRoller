@@ -82,8 +82,6 @@ var LintRoller = {
 
         this.clearLogFile();
         this.lintFiles();
-
-        this.announceSuccess();
     },
 
     /**
@@ -215,7 +213,7 @@ var LintRoller = {
 
                 for (x; x < list.length; x++) {
                     var spacer = '    ',
-                        childPath, childTree;
+                        childPath;
 
                     var stats = this.fs.statSync(currPath + list[x]);
 
@@ -257,31 +255,42 @@ var LintRoller = {
      * @private
      */
     lintFiles : function () {
-        var x = 0,
-            newErrors = [],
+        var me = this,
             errorList = {},
-            errors = 0,
-            linter;
+            errors = 0;
 
         this.log('\n' + this.files.length + ' JS files found.', true);
 
         /*
          * Loop through all files with each linter
          */
-        for (x; x < this.linters.length; x++) {
-            linter = this.linters[x];
+        this.async.each(
+            this.linters,
 
-            newErrors = linter.runLinter(this);
-            errors += newErrors.length; //ignore the first record, which is a title
+            function (linter, callback) {
+                linter.runLinter(
+                    me,
+                    function (newErrors) {
+                        errors += newErrors.length; //ignore the first record, which is a title
 
-            errorList[linter.name] = newErrors;
-        }
+                        errorList[linter.name] = newErrors;
 
-        errorList.totalErrors = errors;
+                        callback(null);
+                    }
+                );
+            },
 
-        if (errors > 0) {
-            this.announceErrors(errorList);
-        }
+            function (e) {
+                errorList.totalErrors = errors;
+
+                if (errors > 0) {
+                    me.announceErrors(errorList);
+                }
+                else {
+                    me.announceSuccess();
+                }
+            }
+        );
     },
 
     /**
@@ -312,24 +321,35 @@ var LintRoller = {
         this.fs.writeFileSync(this.logFile.name, output);
     },
 
-    formatTextOutput : function(errorList) {
+    formatTextOutput : function (errorList) {
         var output = '',
-            i, x;
+            i, x, error;
 
         for (i in errorList) {
             if (errorList.hasOwnProperty(i)) {
-                switch(i) {
+                switch (i) {
                     case 'jslint':
                     case 'jshint':
                     case 'esprima':
                         output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
 
                         for (x = 0; x < errorList[i].length; x++) {
-                            var error = errorList[i][x];
+                            error = errorList[i][x];
                             output += error.file + '\n' +
                                       '    Line #: ' + error.line + '\n' +
                                       '    Char #: ' + error.character + '\n' +
                                       '    Reason: ' + error.reason + '\n\n';
+                        }
+                        break;
+
+                    case 'w3c_html':
+                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+
+                        for (x = 0; x < errorList[i].length; x++) {
+                            error = errorList[i][x];
+                            output += error.file + '\n' +
+                                      '    Message: ' + error.message + '\n' +
+                                      '    Context: ' + error.context + '\n\n';
                         }
                         break;
 
@@ -367,6 +387,9 @@ var LintRoller = {
 var initModules = function (me) {
     //filesystem API
     me.fs = require('fs');
+
+    //async lib
+    me.async = require('async');
 
     //other utilities
     var util = require('./util');
