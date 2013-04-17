@@ -15,7 +15,7 @@ var linter = {
      * An object containing lint validation options
      */
     options : {
-        tolerant: true
+        tolerant : true
     },
 
     /**
@@ -41,6 +41,7 @@ var linter = {
     runLinter : function (parentModule, callback) {
         var me = this,
             errorList = [],
+            fileMatch = /\.js$/i,
             js;
 
         parentModule.log('Running Esprima against code...', false);
@@ -48,53 +49,62 @@ var linter = {
         parentModule.async.each(
             parentModule.files,
 
-            function(file, next) {
-                js = parentModule.fs.readFileSync(file, 'utf8');
+            function (file, next) {
+                /*
+                 * JSHint cannot handle HTML fragments
+                 * https://github.com/jshint/jshint/issues/215
+                 */
+                if (!fileMatch.test(file)) {
+                    parentModule.log('Esprima cannot handle HTML input. File: ' + file, true);
+                }
+                else {
+                    js = parentModule.fs.readFileSync(file, 'utf8');
 
-                var i = 0,
-                    result, totalErrors, error;
+                    var i = 0,
+                        result, totalErrors, error;
 
-                try {
-                    result = ESPRIMA.parse(js, me.options);
+                    try {
+                        result = ESPRIMA.parse(js, me.options);
 
-                    if (result.errors) {
-                        totalErrors = result.errors.length;
+                        if (result.errors) {
+                            totalErrors = result.errors.length;
 
-                        for (i; i < totalErrors; i++) {
-                            error = result.errors[i];
+                            for (i; i < totalErrors; i++) {
+                                error = result.errors[i];
 
-                            if (error) {
-                                errorList.push({
-                                    file      : file,
-                                    line      : error.lineNumber,
-                                    character : error.column,
-                                    reason    : error.message
-                                });
+                                if (error) {
+                                    errorList.push({
+                                        file      : file,
+                                        line      : error.lineNumber,
+                                        character : error.column,
+                                        reason    : error.message
+                                    });
 
-                                if (parentModule.stopOnFirstError) {
-                                    next(true);
+                                    if (parentModule.stopOnFirstError) {
+                                        next(true);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                catch (caughtError) {
-                    errorList.push({
-                        file      : file,
-                        line      : caughtError.lineNumber,
-                        character : caughtError.column,
-                        reason    : caughtError.message
-                    });
+                    catch (caughtError) {
+                        errorList.push({
+                            file      : file,
+                            line      : caughtError.lineNumber,
+                            character : caughtError.column,
+                            reason    : caughtError.message
+                        });
 
-                    if (parentModule.stopOnFirstError) {
-                        next(true);
+                        if (parentModule.stopOnFirstError) {
+                            next(true);
+                        }
                     }
                 }
 
                 next(null);
             },
 
-            function(e) {
+            function (e) {
                 if (e && parentModule.stopOnFirstError && errorList.length > 0) {
                     parentModule.announceErrors(errorList);
                 }

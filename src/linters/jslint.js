@@ -19,15 +19,16 @@ var linter = {
      * An object containing lint validation options
      */
     options : {
-        nomen    : true, //if names may have dangling _
-        plusplus : true, //if increment/decrement should be allowed
-        sloppy   : true, //if the 'use strict'; pragma is optional
-        vars     : true, //if multiple var statements per function should be allowed
-        white    : true, //if sloppy whitespace is tolerated
-        undef    : true, //if variables can be declared out of order,
-        node     : true, //if Node.js globals should be predefined
-        browser  : true, //if the standard browser globals should be predefined
-        stupid   : true  //if really stupid practices are tolerated... namely blocking synchronous operations
+        nomen     : true, //if names may have dangling _
+        plusplus  : true, //if increment/decrement should be allowed
+        sloppy    : true, //if the 'use strict'; pragma is optional
+        vars      : true, //if multiple var statements per function should be allowed
+        white     : true, //if sloppy whitespace is tolerated
+        undef     : true, //if variables can be declared out of order,
+        node      : true, //if Node.js globals should be predefined
+        browser   : true, //if the standard browser globals should be predefined
+        stupid    : true, //if really stupid practices are tolerated... namely blocking synchronous operations
+        fragement : true //if HTML fragments should be allowed
     },
 
     /**
@@ -60,7 +61,7 @@ var linter = {
         parentModule.async.each(
             parentModule.files,
 
-            function(file, next) {
+            function (file, next) {
                 js = parentModule.fs.readFileSync(file, 'utf8');
 
                 var i = 0,
@@ -94,7 +95,7 @@ var linter = {
                 next(null);
             },
 
-            function(e) {
+            function (e) {
                 if (e && parentModule.stopOnFirstError && errorList.length > 0) {
                     parentModule.announceErrors(errorList);
                 }

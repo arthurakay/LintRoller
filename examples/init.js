@@ -4,18 +4,18 @@ var config = {
     verbose          : false,
     stopOnFirstError : false,
 
-    logFile          : {
+    logFile    : {
         name : './error.log',
-        type : 'text'
+        type : 'json'
     },
 
     //recursively include JS files in these folders
-    filepaths        : [
+    filepaths  : [
         './'
     ],
 
     //but ignore anything in these folders
-    exclusions       : [
+    exclusions : [
         './node_modules/',
         './assets/',
         './docs/'
@@ -26,8 +26,10 @@ var config = {
             type : 'jsLint'
         },
         {
-            type    : 'jsHint',
-            options : {}
+            type : 'jsHint'
+        },
+        {
+            type : 'esprima'
         }
     ]
 };

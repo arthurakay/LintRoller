@@ -48,6 +48,12 @@ var LintRoller = {
 
     /**
      * @cfg
+     * Regular Expression for matching files to lint
+     */
+    regex : /\.(js|html)$/i,
+
+    /**
+     * @cfg
      * True to stop linting your code when the first error is encountered.
      */
     stopOnFirstError : true,
@@ -177,7 +183,6 @@ var LintRoller = {
      */
     parseTree : function (pathConfig) {
         var i = 0,
-            regex = /\.js$/i,
             path = [];
 
         if (typeof pathConfig === 'string') {
@@ -220,14 +225,14 @@ var LintRoller = {
                     if (stats.isFile()) {
                         this.log(spacer + list[x] + ' IS A FILE');
                         /*
-                         * We only want JS files
+                         * We only want files matching our regex
                          */
-                        if (regex.test(list[x])) {
+                        if (this.regex.test(list[x])) {
                             this.files.push(currPath + list[x]);
-                            this.log(spacer + list[x] + ' IS A JS FILE. Added to the list.');
+                            this.log(spacer + 'Added to the list.');
                         }
                         else {
-                            this.log(spacer + list[x] + ' IS NOT A JS FILE');
+                            this.log(spacer + list[x] + ' IS NOT A MATCHING FILE');
                         }
                     }
                     else {
@@ -259,7 +264,7 @@ var LintRoller = {
             errorList = {},
             errors = 0;
 
-        this.log('\n' + this.files.length + ' JS files found.', true);
+        this.log('\n' + this.files.length + ' matching files found.', true);
 
         /*
          * Loop through all files with each linter
