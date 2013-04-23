@@ -12,10 +12,12 @@ var linter = {
 
     /**
      * @cfg
-     * An object containing lint validation options
+     * An object containing lint validation options:
+     *
+     *   - fileTypes {Array} An array of matching file types (defaults to [ 'html' ] )
      */
     options : {
-        //TODO: are there any options?
+        fileTypes : [ 'html' ]
     },
 
     /**
@@ -40,6 +42,8 @@ var linter = {
      */
     runLinter : function (parentModule, callback) {
         var errorList = [],
+            fileTypes = this.options.fileTypes.toString().replace(',', '|'),
+            fileMatch = new RegExp('\\.(' + fileTypes + ')$', 'i'),
             i;
 
         parentModule.log('Running W3C_HTML against code...', false);
@@ -48,33 +52,39 @@ var linter = {
             parentModule.files,
 
             function (file, next) {
-                w3c.validate({
-                    file     : file,
-                    output   : 'json',
-                    callback : function (error) {
-                        if (error) {
-                            for (i = 0; i < error.messages.length; i++) {
-                                var err = error.messages[i];
+                if (!fileMatch.test(file)) {
+                    parentModule.log(file + ' DOES NOT MATCH', false);
+                    next();
+                }
+                else {
+                    w3c.validate({
+                        file     : file,
+                        output   : 'json',
+                        callback : function (error) {
+                            if (error) {
+                                for (i = 0; i < error.messages.length; i++) {
+                                    var err = error.messages[i];
 
-                                if (err.type === 'error') {
-                                    errorList.push({
-                                        file      : file,
-                                        line      : err.lastLine,
-                                        character : err.lastColumn,
-                                        reason    : err.message,
-                                        context   : err.explanation
-                                    });
+                                    if (err.type === 'error') {
+                                        errorList.push({
+                                            file      : file,
+                                            line      : err.lastLine,
+                                            character : err.lastColumn,
+                                            reason    : err.message,
+                                            context   : err.explanation
+                                        });
 
-                                    if (parentModule.stopOnFirstError) {
-                                        next(true);
+                                        if (parentModule.stopOnFirstError) {
+                                            next(true);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        next(null);
-                    }
-                });
+                            next(null);
+                        }
+                    });
+                }
             },
 
             function (e) {

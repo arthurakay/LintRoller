@@ -59,7 +59,7 @@ var linter = {
                  * https://github.com/jshint/jshint/issues/215
                  */
                 if (!fileMatch.test(file)) {
-                    parentModule.log('JSHint cannot handle HTML input. File: ' + file, true);
+                    parentModule.log('JSHint cannot handle HTML input. File: ' + file, false);
                 }
                 else {
                     js = parentModule.fs.readFileSync(file, 'utf8');

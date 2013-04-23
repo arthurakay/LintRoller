@@ -36,6 +36,9 @@ var config = {
         },
         {
             type : 'esprima'
+        },
+        {
+            type : 'w3c_html'
         }
     ]
 };
