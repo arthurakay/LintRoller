@@ -10,13 +10,13 @@ function checkError {
     fi
 }
 
-echo "*** Checking JavaScript for lint... ***"
-
-#run LintRunner
-node hooks/pre-commit.js
-
+echo "*** Checking code for lint... ***"
+node hooks/check-lint.js
 checkError $?
 
+echo "*** Running Jasmine Tests... ***"
+node tests/specs.js
+checkError $?
 
 ### Exit successfully
 exit 0
