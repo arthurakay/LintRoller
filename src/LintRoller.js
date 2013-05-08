@@ -24,7 +24,7 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.3
+ * @version 2.3.0
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
