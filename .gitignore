@@ -2,3 +2,4 @@
 *.log
 .DS_Store
 node_modules/
+hooks/test_errors.txt

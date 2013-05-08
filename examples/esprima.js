@@ -3,7 +3,11 @@ var LintRoller = require('../src/LintRoller');
 var config = {
     verbose          : false,
     stopOnFirstError : false,
-    logFile          : './error.log',
+
+    logFile          : {
+        name : './error.log',
+        type : 'text'
+    },
 
     //recursively include JS files in these folders
     filepaths        : [

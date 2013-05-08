@@ -24,11 +24,12 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.2.4
+ * @version 2.3
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
-LintRoller = {
+"use strict";
+var LintRoller = {
     /**
      * @cfg {Array} filepaths
      * REQUIRED. An array of relative filepaths to the folders containing JS files
@@ -47,6 +48,18 @@ LintRoller = {
 
     /**
      * @cfg
+     * Regular Expression for matching files to lint
+     */
+    regex : /\.(js|html)$/i,
+
+    /**
+     * @cfg
+     * Output message when no lint errors are found
+     */
+    defaultSuccessMessage : '\nSuccessfully linted your code!\n\n',
+
+    /**
+     * @cfg
      * True to stop linting your code when the first error is encountered.
      */
     stopOnFirstError : true,
@@ -59,9 +72,15 @@ LintRoller = {
 
     /**
      * @cfg
-     * A relative filepath to where error messages will be logged.
+     * An object containing:
+     *
+     *   - "name": the relative filepath to where error messages will be logged
+     *   - "type": the type of output ("text", "json", or "xml")
      */
-    logFile : 'error_log.txt',
+    logFile : {
+        name : 'error_log.txt',
+        type : 'text'
+    },
 
     /**
      * Call this method to de-lint your JavaScript codebase.
@@ -75,8 +94,6 @@ LintRoller = {
 
         this.clearLogFile();
         this.lintFiles();
-
-        this.announceSuccess();
     },
 
     /**
@@ -98,6 +115,11 @@ LintRoller = {
             if (config.hasOwnProperty(i)) {
                 if (i === 'linters') {
                     this.setLinters(config[i]);
+                }
+                else if (i === 'logFile') {
+                    //TODO: hard-coding this for now... may revisit later
+                    this.logFile.name = config[i].name;
+                    this.logFile.type = config[i].type;
                 }
                 else {
                     this[i] = config[i];
@@ -124,6 +146,7 @@ LintRoller = {
 
             linter = require('./linters/' + linterCfg.type.toLowerCase());
             linter.applyLintOptions(linterCfg.options);
+            linter.name = linterCfg.type.toLowerCase();
 
             this.linters.push(linter);
         }
@@ -133,7 +156,7 @@ LintRoller = {
      * @private
      */
     announceErrors : function (errorList) {
-        if (typeof this.logFile === 'string') {
+        if (typeof this.logFile.name === 'string') {
             this.logToFile(errorList);
         }
 
@@ -145,7 +168,7 @@ LintRoller = {
      * @private
      */
     announceSuccess : function () {
-        this.log('\nSuccessfully linted yo shit.\n\n', true);
+        this.log(this.defaultSuccessMessage, true);
         process.exit(0);
     },
 
@@ -166,11 +189,10 @@ LintRoller = {
      */
     parseTree : function (pathConfig) {
         var i = 0,
-            regex = /\.js$/i,
             path = [];
 
         if (typeof pathConfig === 'string') {
-            path[0] = pathConfig;
+            path.push(pathConfig);
         }
         else {
             path = pathConfig; //should be an array of strings
@@ -197,43 +219,20 @@ LintRoller = {
                 this.log('Excluding path: ' + currPath);
             }
             else {
-                var list = this.getFiles(currPath);
-                var x = 0;
+                //if the path is a file, skip to the actual linting...
 
-                for (x; x < list.length; x++) {
-                    var spacer = '    ',
-                        childPath, childTree;
+                if (this.regex.test(currPath)) {
+                    this.log(currPath + ' is a single file. Running parseFile()...');
+                    this.parseFile('', currPath);
+                }
+                else {
+                    this.log(currPath + ' is a directory. Running parseFile() on all contained files...');
 
-                    var stats = this.fs.statSync(currPath + list[x]);
+                    var list = this.getFiles(currPath);
+                    var x = 0;
 
-                    if (stats.isFile()) {
-                        this.log(spacer + list[x] + ' IS A FILE');
-                        /*
-                         * We only want JS files
-                         */
-                        if (regex.test(list[x])) {
-                            this.files.push(currPath + list[x]);
-                            this.log(spacer + list[x] + ' IS A JS FILE. Added to the list.');
-                        }
-                        else {
-                            this.log(spacer + list[x] + ' IS NOT A JS FILE');
-                        }
-                    }
-                    else {
-                        this.log(spacer + list[x] + ' IS NOT A FILE');
-
-                        /*
-                         * If not a file
-                         *   - check against parent paths
-                         *   - recurse into child paths
-                         */
-                        if (list[x] === '.' || list[x] === '..') {
-                            this.log(spacer + list[x] + ' IS A RELATIVE DIRECTORY PATH');
-                        }
-                        else {
-                            childPath = currPath + list[x] + '/';
-                            this.parseTree(childPath);
-                        }
+                    for (x; x < list.length; x++) {
+                        this.parseFile(currPath, list[x]);
                     }
                 }
             }
@@ -243,51 +242,159 @@ LintRoller = {
     /**
      * @private
      */
-    lintFiles : function () {
-        var x = 0,
-            newErrors = [],
-            errorList = [],
-            errors = 0,
-            j,
-            linter;
+    parseFile : function(currPath, fileName) {
+        var spacer = '    ',
+            childPath;
 
-        this.log('\n' + this.files.length + ' JS files found.', true);
+        var stats = this.fs.statSync(currPath + fileName);
 
-        /*
-         * Loop through all files with each linter
-         */
-        for (x; x < this.linters.length; x++) {
-            linter = this.linters[x];
-
-            newErrors = linter.runLinter(this);
-            errors += newErrors.length - 1; //ignore the first record, which is a title
-
-            errorList = errorList.concat(newErrors);
+        if (stats.isFile()) {
+            this.log(spacer + fileName + ' IS A FILE');
+            /*
+             * We only want files matching our regex
+             */
+            if (this.regex.test(fileName)) {
+                this.files.push(currPath + fileName);
+                this.log(spacer + 'Added to the list.');
+            }
+            else {
+                this.log(spacer + fileName + ' IS NOT A MATCHING FILE');
+            }
         }
+        else {
+            this.log(spacer + fileName + ' IS NOT A FILE');
 
-        if (errors > 0) {
-            this.announceErrors(errorList);
+            /*
+             * If not a file
+             *   - check against parent paths
+             *   - recurse into child paths
+             */
+            if (fileName === '.' || fileName === '..') {
+                this.log(spacer + fileName + ' IS A RELATIVE DIRECTORY PATH');
+            }
+            else {
+                childPath = currPath + fileName + '/';
+                this.parseTree(childPath);
+            }
         }
     },
 
     /**
      * @private
      */
+    lintFiles : function () {
+        var me = this,
+            errorList = {},
+            errors = 0;
+
+        this.log('\n' + this.files.length + ' matching files found.', true);
+
+        /*
+         * Loop through all files with each linter
+         */
+        this.async.each(
+            this.linters,
+
+            function (linter, callback) {
+                linter.runLinter(
+                    me,
+                    function (newErrors) {
+                        errors += newErrors.length; //ignore the first record, which is a title
+
+                        errorList[linter.name] = newErrors;
+
+                        callback(null);
+                    }
+                );
+            },
+
+            function (e) {
+                errorList.totalErrors = errors;
+
+                if (errors > 0) {
+                    me.announceErrors(errorList);
+                }
+                else {
+                    me.announceSuccess();
+                }
+            }
+        );
+    },
+
+    /**
+     * @private
+     */
     logToFile : function (errorList) {
-        this.log('\nWriting ' + ((errorList.length - this.linters.length ) / 6) + ' errors to new log file.', true);
+        errorList.title = 'LintRoller : Output for ' + new Date();
+        this.log('\nWriting ' + errorList.totalErrors + ' errors to new log file.', true);
 
-        var header = 'LintRoller : Output for ' + new Date() + '\n\n';
-        errorList.splice(0, 0, header);
+        var output;
 
-        var output = errorList.join().replace(/,/g, '\n');
+        switch (this.logFile.type.toUpperCase()) {
+            case 'JSON':
+                output = JSON.stringify(errorList);
+                break;
 
-        this.fs.writeFileSync(this.logFile, output);
+            case 'XML':
+                this.log('\nNot currently supporting XML output...');
+                //break;
+                return;
+
+            default:
+                output = errorList.title + '\n\n';
+                output += this.formatTextOutput(errorList);
+                break;
+        }
+
+        this.fs.writeFileSync(this.logFile.name, output);
+    },
+
+    formatTextOutput : function (errorList) {
+        var output = '',
+            i, x, error;
+
+        for (i in errorList) {
+            if (errorList.hasOwnProperty(i)) {
+                switch (i) {
+                    case 'jslint':
+                    case 'jshint':
+                    case 'esprima':
+                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+
+                        for (x = 0; x < errorList[i].length; x++) {
+                            error = errorList[i][x];
+                            output += error.file + '\n' +
+                                      '    Line #: ' + error.line + '\n' +
+                                      '    Char #: ' + error.character + '\n' +
+                                      '    Reason: ' + error.reason + '\n\n';
+                        }
+                        break;
+
+                    case 'w3c_html':
+                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+
+                        for (x = 0; x < errorList[i].length; x++) {
+                            error = errorList[i][x];
+                            output += error.file + '\n' +
+                                      '    Line #: ' + error.line + '\n' +
+                                      '    Char #: ' + error.character + '\n' +
+                                      '    Message: ' + error.reason + '\n\n';
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return output;
     },
 
     clearLogFile : function () {
         try {
             this.log('\nDeleting old log file...', true);
-            this.fs.unlinkSync(this.logFile);
+            this.fs.unlinkSync(this.logFile.name);
             this.log('Done.', true);
         }
         catch (err) {
@@ -309,6 +416,9 @@ LintRoller = {
 var initModules = function (me) {
     //filesystem API
     me.fs = require('fs');
+
+    //async lib
+    me.async = require('async');
 
     //other utilities
     var util = require('./util');

@@ -3,6 +3,9 @@ var LintRoller = require('../src/LintRoller.js');
 var config = {
     verbose    : false,
 
+    stopOnFirstError: false,
+    regex : /\.html$/i, //only look at HTML files
+
     logFile          : {
         name : './error.log',
         type : 'text'
@@ -10,21 +13,14 @@ var config = {
 
     //recursively include JS files in these folders
     filepaths  : [
-        '../'
-    ],
-
-    //but ignore anything in these folders
-    exclusions : [
-        '../node_modules/',
-        '../assets/',
-        '../docs/'
+        './'
     ],
 
     linters : [
         {
-            type : 'jsLint'
+            type : 'w3c_html'
         }
     ]
 };
 
-LintRoller.util.replaceTabsWithSpaces(config, 4);
+LintRoller.init(config);

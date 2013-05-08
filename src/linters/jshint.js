@@ -1,3 +1,4 @@
+"use strict";
 var JSHINT = require('jshint').JSHINT;
 
 /**
@@ -41,50 +42,68 @@ var linter = {
     /**
      * @private
      */
-    runLinter : function (parentModule) {
-        var j = 0,
-            errorList = ['=============== Running JSHint... ===============\n\n'],
-            file, js;
+    runLinter : function (parentModule, callback) {
+        var me = this,
+            errorList = [],
+            fileMatch = /\.js$/i,
+            js;
 
         parentModule.log('Running JSHint against code...', false);
 
-        for (j; j < parentModule.files.length; j++) {
+        parentModule.async.each(
+            parentModule.files,
 
-            file = parentModule.files[j];
-            js = parentModule.fs.readFileSync(file, 'utf8');
+            function (file, next) {
+                /*
+                 * JSHint cannot handle HTML fragments
+                 * https://github.com/jshint/jshint/issues/215
+                 */
+                if (!fileMatch.test(file)) {
+                    parentModule.log('JSHint cannot handle HTML input. File: ' + file, false);
+                }
+                else {
+                    js = parentModule.fs.readFileSync(file, 'utf8');
 
-            var i = 0,
-                result = this.lib(js, this.options),
-                totalErrors = this.lib.errors.length,
-                error;
+                    var i = 0,
+                        result = me.lib(js, me.options),
+                        totalErrors = me.lib.errors.length,
+                        error;
 
-            if (!result) {
-                for (i; i < totalErrors; i++) {
-                    error = this.lib.errors[i];
+                    if (!result) {
+                        for (i; i < totalErrors; i++) {
+                            error = me.lib.errors[i];
 
-                    if (error) {
-                        errorList.push(
-                            file,
-                            '    Line #: ' + error.line,
-                            '    Char #: ' + error.character,
-                            '    Reason: ' + error.reason,
-                            '',
-                            ''
-                        );
+                            if (error) {
+                                errorList.push({
+                                    file      : file,
+                                    line      : error.line,
+                                    character : error.character,
+                                    reason    : error.reason
+                                });
 
-                        if (parentModule.stopOnFirstError) {
-                            break;
+                                if (parentModule.stopOnFirstError) {
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (parentModule.stopOnFirstError && errorList.length > 0) {
+                            next(true);
                         }
                     }
                 }
 
-                if (parentModule.stopOnFirstError && errorList.length > 0) {
+                next(null);
+            },
+
+            function (e) {
+                if (e && parentModule.stopOnFirstError && errorList.length > 0) {
                     parentModule.announceErrors(errorList);
                 }
-            }
-        }
 
-        return errorList;
+                callback(errorList);
+            }
+        );
     }
 
 };
