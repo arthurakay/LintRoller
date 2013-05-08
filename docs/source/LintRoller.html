@@ -69,6 +69,12 @@ var LintRoller = {
      */
     regex : /\.(js|html)$/i,
 
+<span id='LintRoller-cfg-defaultSuccessMessage'>    /**
+</span>     * @cfg
+     * Output message when no lint errors are found
+     */
+    defaultSuccessMessage : '\nSuccessfully linted your code!\n\n',
+
 <span id='LintRoller-cfg-stopOnFirstError'>    /**
 </span>     * @cfg
      * True to stop linting your code when the first error is encountered.
@@ -179,7 +185,7 @@ var LintRoller = {
 </span>     * @private
      */
     announceSuccess : function () {
-        this.log('\nSuccessfully linted yo shit.\n\n', true);
+        this.log(this.defaultSuccessMessage, true);
         process.exit(0);
     },
 
