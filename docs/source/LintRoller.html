@@ -209,7 +209,7 @@ var LintRoller = {
             path = [];
 
         if (typeof pathConfig === 'string') {
-            path[0] = pathConfig;
+            path.push(pathConfig);
         }
         else {
             path = pathConfig; //should be an array of strings
@@ -236,45 +236,62 @@ var LintRoller = {
                 this.log('Excluding path: ' + currPath);
             }
             else {
-                var list = this.getFiles(currPath);
-                var x = 0;
+                //if the path is a file, skip to the actual linting...
 
-                for (x; x &lt; list.length; x++) {
-                    var spacer = '    ',
-                        childPath;
+                if (this.regex.test(currPath)) {
+                    this.log(currPath + ' is a single file. Running parseFile()...');
+                    this.parseFile('', currPath);
+                }
+                else {
+                    this.log(currPath + ' is a directory. Running parseFile() on all contained files...');
 
-                    var stats = this.fs.statSync(currPath + list[x]);
+                    var list = this.getFiles(currPath);
+                    var x = 0;
 
-                    if (stats.isFile()) {
-                        this.log(spacer + list[x] + ' IS A FILE');
-                        /*
-                         * We only want files matching our regex
-                         */
-                        if (this.regex.test(list[x])) {
-                            this.files.push(currPath + list[x]);
-                            this.log(spacer + 'Added to the list.');
-                        }
-                        else {
-                            this.log(spacer + list[x] + ' IS NOT A MATCHING FILE');
-                        }
-                    }
-                    else {
-                        this.log(spacer + list[x] + ' IS NOT A FILE');
-
-                        /*
-                         * If not a file
-                         *   - check against parent paths
-                         *   - recurse into child paths
-                         */
-                        if (list[x] === '.' || list[x] === '..') {
-                            this.log(spacer + list[x] + ' IS A RELATIVE DIRECTORY PATH');
-                        }
-                        else {
-                            childPath = currPath + list[x] + '/';
-                            this.parseTree(childPath);
-                        }
+                    for (x; x &lt; list.length; x++) {
+                        this.parseFile(currPath, list[x]);
                     }
                 }
+            }
+        }
+    },
+
+<span id='LintRoller-method-parseFile'>    /**
+</span>     * @private
+     */
+    parseFile : function(currPath, fileName) {
+        var spacer = '    ',
+            childPath;
+
+        var stats = this.fs.statSync(currPath + fileName);
+
+        if (stats.isFile()) {
+            this.log(spacer + fileName + ' IS A FILE');
+            /*
+             * We only want files matching our regex
+             */
+            if (this.regex.test(fileName)) {
+                this.files.push(currPath + fileName);
+                this.log(spacer + 'Added to the list.');
+            }
+            else {
+                this.log(spacer + fileName + ' IS NOT A MATCHING FILE');
+            }
+        }
+        else {
+            this.log(spacer + fileName + ' IS NOT A FILE');
+
+            /*
+             * If not a file
+             *   - check against parent paths
+             *   - recurse into child paths
+             */
+            if (fileName === '.' || fileName === '..') {
+                this.log(spacer + fileName + ' IS A RELATIVE DIRECTORY PATH');
+            }
+            else {
+                childPath = currPath + fileName + '/';
+                this.parseTree(childPath);
             }
         }
     },
