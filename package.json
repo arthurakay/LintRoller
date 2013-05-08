@@ -14,7 +14,7 @@
     ],
 
     "scripts" : {
-        "test" : "sh ./hooks/pre-commit"
+        "test" : "./hooks/pre-commit"
     },
 
     "main" : "./src/LintRoller.js",
