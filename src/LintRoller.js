@@ -54,6 +54,12 @@ var LintRoller = {
 
     /**
      * @cfg
+     * Output message when no lint errors are found
+     */
+    defaultSuccessMessage : '\nSuccessfully linted your code!\n\n',
+
+    /**
+     * @cfg
      * True to stop linting your code when the first error is encountered.
      */
     stopOnFirstError : true,
@@ -162,7 +168,7 @@ var LintRoller = {
      * @private
      */
     announceSuccess : function () {
-        this.log('\nSuccessfully linted yo shit.\n\n', true);
+        this.log(this.defaultSuccessMessage, true);
         process.exit(0);
     },
 
