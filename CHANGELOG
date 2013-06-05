@@ -1,7 +1,11 @@
 ===============
   VERSION 2.x
 ===============
-Version 2.3 () - BREAKING CHANGES
+Version 2.3.1 (June 5, 2013)
+  - New example for defining globals
+  - Fix for JSHint globals
+
+Version 2.3 (May 8, 2013) - BREAKING CHANGES
   - Strict mode!
   - Now supporting multiple output formats - text, json (and soon XML?)
   - updated documentation

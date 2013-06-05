@@ -24,14 +24,32 @@ var config = {
             type    : 'jsLint',
             options : {
                 sloppy : false,
-                node   : true
+                node   : true,
+
+                predef : [
+                    'describe',
+                    'beforeEach',
+                    'afterEach',
+                    'it',
+                    'expect',
+                    'spyOn'
+                ]
             }
         },
         {
             type    : 'jsHint',
             options : {
                 strict : true,
-                node   : true
+                node   : true,
+
+                globals : {
+                    'describe'   : true,
+                    'beforeEach' : true,
+                    'afterEach'  : true,
+                    'it'         : true,
+                    'expect'     : true,
+                    'spyOn'      : true
+                }
             }
         },
         {

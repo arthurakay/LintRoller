@@ -1,4 +1,3 @@
-/*global describe, it, expect, beforeEach, afterEach, spyOn */
 "use strict";
 
 describe('LintRoller', function () {
