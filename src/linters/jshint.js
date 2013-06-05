@@ -23,6 +23,14 @@ var linter = {
     },
 
     /**
+     * @cfg
+     * An object containing the pre-defined globals of the lint validation options
+     */
+    globals : {
+
+    },
+
+    /**
      * @private
      */
     applyLintOptions : function (options) {
@@ -34,7 +42,12 @@ var linter = {
 
         for (i in options) {
             if (options.hasOwnProperty(i)) {
-                this.options[i] = options[i];
+                if (i === 'globals') {
+                    this.globals = options[i];
+                }
+                else {
+                    this.options[i] = options[i];
+                }
             }
         }
     },
@@ -65,7 +78,7 @@ var linter = {
                     js = parentModule.fs.readFileSync(file, 'utf8');
 
                     var i = 0,
-                        result = me.lib(js, me.options),
+                        result = me.lib(js, me.options, me.globals),
                         totalErrors = me.lib.errors.length,
                         error;
 
