@@ -41,7 +41,7 @@
 </span> * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.3.0
+ * @version 2.3.2
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
@@ -56,6 +56,12 @@ var LintRoller = {
 </span>     * @cfg {Array} exclusions
      * REQUIRED. An array of relative filepaths to the folders containing JS files that should NOT be linted
      */
+
+<span id='LintRoller-cfg-stdoutErrors'>    /**
+</span>     * @cfg
+     * True to log errors directly into stdout
+     */
+    stdoutErrors : false,
 
 <span id='LintRoller-cfg-verbose'>    /**
 </span>     * @cfg
@@ -93,6 +99,8 @@ var LintRoller = {
      *
      *   - &quot;name&quot;: the relative filepath to where error messages will be logged
      *   - &quot;type&quot;: the type of output (&quot;text&quot;, &quot;json&quot;, or &quot;xml&quot;)
+     *
+     *   Set to null to disable logging errors to a file
      */
     logFile : {
         name : 'error_log.txt',
@@ -134,9 +142,14 @@ var LintRoller = {
                     this.setLinters(config[i]);
                 }
                 else if (i === 'logFile') {
-                    //TODO: hard-coding this for now... may revisit later
-                    this.logFile.name = config[i].name;
-                    this.logFile.type = config[i].type;
+                    if (config[i] === null) {
+                        delete this.logFile;
+                    }
+                    else {
+                        //TODO: hard-coding this for now... may revisit later
+                        this.logFile.name = config[i].name;
+                        this.logFile.type = config[i].type;
+                    }
                 }
                 else {
                     this[i] = config[i];
@@ -173,11 +186,17 @@ var LintRoller = {
 </span>     * @private
      */
     announceErrors : function (errorList) {
-        if (typeof this.logFile.name === 'string') {
+        this.log('\nFix Your Errors!', true);
+
+        if (this.logFile &amp;&amp; (typeof this.logFile.name === 'string')) {
             this.logToFile(errorList);
         }
 
-        this.log('\nFix Your Errors! Check the log file for more information.\n\n', true);
+        if (this.stdoutErrors === true) {
+            this.logToStdOut(errorList);
+        }
+
+
         process.exit(1);
     },
 
@@ -338,6 +357,20 @@ var LintRoller = {
         );
     },
 
+<span id='LintRoller-method-logToStdOut'>    /**
+</span>     * @private
+     */
+    logToStdOut : function (errorList) {
+        errorList.title = 'LintRoller : Output for ' + new Date();
+        this.log('\nFound ' + errorList.totalErrors + ' errors.', true);
+
+        var output = errorList.title + '\n\n';
+        output += this.formatTextOutput(errorList);
+
+        this.log(output, true);
+    },
+
+
 <span id='LintRoller-method-logToFile'>    /**
 </span>     * @private
      */
@@ -409,6 +442,8 @@ var LintRoller = {
     },
 
     clearLogFile : function () {
+        if (!this.logFile) { return; }
+
         try {
             this.log('\nDeleting old log file...', true);
             this.fs.unlinkSync(this.logFile.name);
