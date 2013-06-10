@@ -24,11 +24,14 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.3.2
+ * @version 2.3.3
  *
  * GitHub Project: http://arthurakay.github.com/LintRoller/
  */
 "use strict";
+
+var version = '2.3.3';
+
 var LintRoller = {
     /**
      * @cfg {Array} filepaths
@@ -83,7 +86,9 @@ var LintRoller = {
      *   - "name": the relative filepath to where error messages will be logged
      *   - "type": the type of output ("text", "json", or "xml")
      *
-     *   Set to null to disable logging errors to a file
+     *   Set to null to disable logging errors to a file.
+     *
+     *   You can optionally just provide a string as the filepath to a log file - the "type" will simply default to "text".
      */
     logFile : {
         name : 'error_log.txt',
@@ -94,6 +99,8 @@ var LintRoller = {
      * Call this method to de-lint your JavaScript codebase.
      */
     init : function (config) {
+        this.log('*** LintRoller v' + this.getVersion() + ' ***\n', true);
+
         //APPLY CONFIG OPTIONS
         this.initConfigs(config);
 
@@ -108,6 +115,13 @@ var LintRoller = {
      * @private
      */
     files : [],
+
+    /**
+     * @method
+     */
+    getVersion : function () {
+        return version;
+    },
 
     /**
      * @private
@@ -125,13 +139,21 @@ var LintRoller = {
                     this.setLinters(config[i]);
                 }
                 else if (i === 'logFile') {
-                    if (config[i] === null) {
+                    var logFile = config[i];
+
+                    if (logFile === null) {
                         delete this.logFile;
                     }
                     else {
-                        //TODO: hard-coding this for now... may revisit later
-                        this.logFile.name = config[i].name;
-                        this.logFile.type = config[i].type;
+                        if (typeof logFile === 'string') {
+                            this.logFile.name = logFile;
+                            //type will remain "text" by default
+                        }
+                        else {
+                            //TODO: hard-coding object assignment this for now... may revisit later
+                            this.logFile.name = logFile.name;
+                            this.logFile.type = logFile.type;
+                        }
                     }
                 }
                 else {
@@ -178,7 +200,6 @@ var LintRoller = {
         if (this.stdoutErrors === true) {
             this.logToStdOut(errorList);
         }
-
 
         process.exit(1);
     },
@@ -261,7 +282,7 @@ var LintRoller = {
     /**
      * @private
      */
-    parseFile : function(currPath, fileName) {
+    parseFile : function (currPath, fileName) {
         var spacer = '    ',
             childPath;
 
@@ -353,7 +374,6 @@ var LintRoller = {
         this.log(output, true);
     },
 
-
     /**
      * @private
      */
@@ -379,7 +399,12 @@ var LintRoller = {
                 break;
         }
 
-        this.fs.writeFileSync(this.logFile.name, output);
+        try {
+            this.fs.writeFileSync(this.logFile.name, output);
+        }
+        catch (err) {
+            this.log('\nAn error occurred while trying to generate new log file.', true);
+        }
     },
 
     formatTextOutput : function (errorList) {
@@ -425,7 +450,9 @@ var LintRoller = {
     },
 
     clearLogFile : function () {
-        if (!this.logFile) { return; }
+        if (!this.logFile) {
+            return;
+        }
 
         try {
             this.log('\nDeleting old log file...', true);

@@ -1,6 +1,12 @@
 ===============
   VERSION 2.x
 ===============
+Version 2.3.3 (June 10, 2013)
+  - Added getVersion() method and outputting value to console
+  - Now allowing logFile config to accept a string (backwards compatibility to <v2.3)
+  - Try/Catch surrounding error file generation
+  - new unit tests
+
 Version 2.3.2 (June 6, 2013)
   - Added support to log errors to stdout
   - New example for logging errors to stdout

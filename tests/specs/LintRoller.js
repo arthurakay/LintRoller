@@ -23,6 +23,13 @@ describe('LintRoller', function () {
         //TODO: can a useful test be written?
     });
 
+    describe('getVersion()', function () {
+        it('should return a string version number', function () {
+            expect(typeof LintRoller.getVersion).toEqual('function');
+            expect(typeof LintRoller.getVersion()).toEqual('string');
+        });
+    });
+
     describe('initConfigs()', function () {
 
         afterEach(function () {
@@ -69,6 +76,29 @@ describe('LintRoller', function () {
             expect(LintRoller.logFile.foo).toEqual(undefined);
         });
 
+        it('should allow the "logFile" config to be a string instead of an object', function () {
+            expect(typeof LintRoller.logFile).toEqual('object');
+
+            LintRoller.initConfigs({
+                logFile : 'foo.txt'
+            });
+
+            expect(LintRoller.logFile.name).toEqual('foo.txt');
+
+            //default should remain the same
+            expect(LintRoller.logFile.type).toEqual('text');
+        });
+
+        it('should allow the "logFile" config to be null, which deletes logFile entirely', function () {
+            expect(typeof LintRoller.logFile).toEqual('object');
+
+            LintRoller.initConfigs({
+                logFile : null
+            });
+
+            expect(LintRoller.logFile).toEqual(undefined);
+        });
+
     });
 
     describe('setLinters()', function () {
@@ -105,6 +135,10 @@ describe('LintRoller', function () {
     });
 
     describe('logToFile()', function () {
+        //TODO: can a useful test be written?
+    });
+
+    describe('logToStdOut()', function () {
         //TODO: can a useful test be written?
     });
 
