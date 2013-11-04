@@ -34,7 +34,7 @@ jasmine.executeSpecsInFolder({
     isVerbose  : isVerbose,
     showColors : showColors,
 
-    onComplete : function (runner, log) {
+    onComplete : function (runner) {
         if (runner.results().failedCount === 0) {
             process.exit(0);
         }

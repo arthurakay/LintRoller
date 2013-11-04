@@ -19,9 +19,9 @@ describe('LintRoller', function () {
         expect(LintRoller).toNotEqual(undefined);
     });
 
-    describe('init()', function () {
-        //TODO: can a useful test be written?
-    });
+//    describe('init()', function () {
+//        //TODO: can a useful test be written?
+//    });
 
     describe('getVersion()', function () {
         it('should return a string version number', function () {
@@ -113,42 +113,42 @@ describe('LintRoller', function () {
         });
     });
 
-    describe('announceErrors()', function () {
-        //TODO: can a useful test be written?
-    });
+//    describe('announceErrors()', function () {
+//        //TODO: can a useful test be written?
+//    });
 
-    describe('announceSuccess()', function () {
-        //TODO: can a useful test be written?
-    });
+//    describe('announceSuccess()', function () {
+//        //TODO: can a useful test be written?
+//    });
 
-    describe('getFiles()', function () {
-        //This method just returns the result of fs.readdirSync() and logs output to the terminal
-        //I probably don't need to test this
-    });
+//    describe('getFiles()', function () {
+//        //This method just returns the result of fs.readdirSync() and logs output to the terminal
+//        //I probably don't need to test this
+//    });
 
-    describe('parseTree()', function () {
+//    describe('parseTree()', function () {
+//
+//    });
 
-    });
+//    describe('lintFiles()', function () {
+//        //TODO: can a useful test be written? Or do we simply test the ACTUAL linters?
+//    });
 
-    describe('lintFiles()', function () {
-        //TODO: can a useful test be written? Or do we simply test the ACTUAL linters?
-    });
+//    describe('logToFile()', function () {
+//        //TODO: can a useful test be written?
+//    });
 
-    describe('logToFile()', function () {
-        //TODO: can a useful test be written?
-    });
+//    describe('logToStdOut()', function () {
+//        //TODO: can a useful test be written?
+//    });
 
-    describe('logToStdOut()', function () {
-        //TODO: can a useful test be written?
-    });
+//    describe('formatTextOutput()', function () {
+//
+//    });
 
-    describe('formatTextOutput()', function () {
-
-    });
-
-    describe('clearLogFile()', function () {
-        //TODO: can a useful test be written?
-    });
+//    describe('clearLogFile()', function () {
+//        //TODO: can a useful test be written?
+//    });
 
     describe('log()', function () {
 

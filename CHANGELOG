@@ -1,6 +1,10 @@
 ===============
   VERSION 2.x
 ===============
+Version 2.3.4 (November 4, 2013)
+  - Bug fixes for JSLint dependency
+  - Code cleanup
+
 Version 2.3.3 (June 10, 2013)
   - Added getVersion() method and outputting value to console
   - Now allowing logFile config to accept a string (backwards compatibility to <v2.3)

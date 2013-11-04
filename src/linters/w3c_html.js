@@ -61,9 +61,11 @@ var linter = {
                         file     : file,
                         output   : 'json',
                         callback : function (error) {
+                            var err;
+
                             if (error) {
                                 for (i = 0; i < error.messages.length; i++) {
-                                    var err = error.messages[i];
+                                    err = error.messages[i];
 
                                     if (err.type === 'error') {
                                         errorList.push({

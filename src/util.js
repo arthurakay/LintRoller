@@ -189,18 +189,18 @@ var util = {
             offendingFiles = [],
             file, js;
 
+        var i, result, totalErrors, error;
+
         for (j; j < this.parent.files.length; j++) {
 
             file = this.parent.files[j];
             js = this.parent.fs.readFileSync(file, 'utf8');
 
-            var i = 0,
-                result = linter(js, options),
-                totalErrors = linter.errors.length,
-                error;
+            result = linter(js, options);
+            totalErrors = linter.errors.length;
 
             if (!result) {
-                for (i; i < totalErrors; i++) {
+                for (i = 0; i < totalErrors; i++) {
                     error = linter.errors[i];
 
                     if (error && error.reason === msg) {

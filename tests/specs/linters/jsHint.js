@@ -4,13 +4,13 @@ describe('LintRoller - jsHint module', function () {
     var JSHINT = require('../../../src/linters/jshint');
 
     //SETUP / TEARDOWN
-    beforeEach(function () {
+//    beforeEach(function () {
+//
+//    });
 
-    });
-
-    afterEach(function () {
-
-    });
+//    afterEach(function () {
+//
+//    });
 
     //SPECS
 
@@ -26,9 +26,9 @@ describe('LintRoller - jsHint module', function () {
             JSHINT.globals = {};
         });
 
-        afterEach(function () {
-
-        });
+//        afterEach(function () {
+//
+//        });
 
         var options = {
             strict : true,

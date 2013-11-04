@@ -30,7 +30,7 @@
  */
 "use strict";
 
-var version = '2.3.3';
+var version = '2.3.4';
 
 var LintRoller = {
     /**
@@ -127,7 +127,8 @@ var LintRoller = {
      * @private
      */
     initConfigs : function (config) {
-        var i;
+        var i,
+            logFile;
 
         if (!config) {
             return false;
@@ -139,7 +140,7 @@ var LintRoller = {
                     this.setLinters(config[i]);
                 }
                 else if (i === 'logFile') {
-                    var logFile = config[i];
+                    logFile = config[i];
 
                     if (logFile === null) {
                         delete this.logFile;
@@ -238,17 +239,19 @@ var LintRoller = {
             path = pathConfig; //should be an array of strings
         }
 
+        var currPath, exclude, j,
+            list, x;
+
         for (i; i < path.length; i++) {
-            var currPath = path[i];
-            var exclude = false;
+            currPath = path[i];
+            exclude = false;
 
             this.log('\n*** currPath: ' + currPath);
 
             if (this.exclusions) {
                 this.log('Checking exclusion paths...');
 
-                var j = 0;
-                for (j; j < this.exclusions.length; j++) {
+                for (j = 0; j < this.exclusions.length; j++) {
                     if (currPath === this.exclusions[j]) {
                         exclude = true;
                     }
@@ -268,10 +271,9 @@ var LintRoller = {
                 else {
                     this.log(currPath + ' is a directory. Running parseFile() on all contained files...');
 
-                    var list = this.getFiles(currPath);
-                    var x = 0;
+                    list = this.getFiles(currPath);
 
-                    for (x; x < list.length; x++) {
+                    for (x = 0; x < list.length; x++) {
                         this.parseFile(currPath, list[x]);
                     }
                 }
@@ -348,7 +350,7 @@ var LintRoller = {
                 );
             },
 
-            function (e) {
+            function () {
                 errorList.totalErrors = errors;
 
                 if (errors > 0) {

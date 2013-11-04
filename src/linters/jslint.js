@@ -1,5 +1,5 @@
 "use strict";
-var JSLINT = require('jslint');
+var JSLINT = require('jslint')();
 
 /**
  * @class LintRoller.linters.JSLint

@@ -7,6 +7,9 @@ var config = {
     verbose          : false,
     stopOnFirstError : false,
 
+    //only check JS files
+    regex : /\.(js)$/i,
+
     //recursively include JS files in these folders
     filepaths        : [
         '../'
@@ -25,6 +28,7 @@ var config = {
             options : {
                 sloppy : false,
                 node   : true,
+                todo   : true,
 
                 predef : [
                     'describe',
@@ -54,10 +58,10 @@ var config = {
         },
         {
             type : 'esprima'
-        },
-        {
-            type : 'w3c_html'
         }
+//        {
+//            type : 'w3c_html'
+//        }
     ]
 };
 
