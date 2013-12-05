@@ -84,11 +84,28 @@ var LintRoller = {
      * An object containing:
      *
      *   - "name": the relative filepath to where error messages will be logged
-     *   - "type": the type of output ("text", "json", or "xml")
+     *   - "type": the type of output ("text" or "json")
      *
      *   Set to null to disable logging errors to a file.
      *
      *   You can optionally just provide a string as the filepath to a log file - the "type" will simply default to "text".
+     *
+     *   For JSON output, errors returned in following format:
+     *
+     *   errorList = {
+     *       totalErrors : 1,
+     *       totalFiles  : 1,
+     *
+     *       //one array per configured linter
+     *       jslint : [
+     *           {
+     *               file      : 'file.js',
+     *               line      : 0,
+     *               character : 0,
+     *               reason    : 'Just because!'
+     *           }
+     *       ]
+     *   }
      */
     logFile : {
         name : 'error_log.txt',
@@ -326,10 +343,14 @@ var LintRoller = {
      */
     lintFiles : function () {
         var me = this,
-            errorList = {},
+            errorList = {
+                totalFiles : this.files.length,
+
+                lineCounts : {}
+            },
             errors = 0;
 
-        this.log('\n' + this.files.length + ' matching files found.', true);
+        this.log('\n' + errorList.totalFiles + ' matching files found.', true);
 
         /*
          * Loop through all files with each linter
@@ -340,16 +361,20 @@ var LintRoller = {
             function (linter, callback) {
                 linter.runLinter(
                     me,
-                    function (newErrors) {
-                        errors += newErrors.length; //ignore the first record, which is a title
+                    function (newErrors, lineCount) {
+                        errors += newErrors.length;
 
                         errorList[linter.name] = newErrors;
+                        errorList.lineCounts[linter.name] = lineCount;
 
                         callback(null);
                     }
                 );
             },
 
+            /*
+             * When all linting is complete...
+             */
             function () {
                 errorList.totalErrors = errors;
 
@@ -366,21 +391,53 @@ var LintRoller = {
     /**
      * @private
      */
+    generateLogTitle : function(errorList) {
+        var output, key,
+            lineCounts = errorList.lineCounts;
+
+        output = [
+            'LintRoller v' + version + '\n',
+            '    Output for ' + new Date() + '\n',
+            '    Total files found   : ' + errorList.totalFiles,
+            '    All errors reported : ' + errorList.totalErrors,
+            '\n'
+        ];
+
+        for (key in lineCounts) {
+            if (lineCounts.hasOwnProperty(key)) {
+                output.push('    ' + lineCounts[key] + ' lines checked via ' + key.toUpperCase());
+            }
+        }
+
+        output.push('\n');
+
+        return output.join('\n');
+    },
+
+    /**
+     * @private
+     */
+    generateTextHeader : function(linter, lintErrors) {
+        return [
+            '=============== ',
+            'Running ' + linter.toUpperCase(),
+            ' [ Total errors: ' + lintErrors.length + ' ] ',
+            '===============',
+            '\n\n'
+        ].join('');
+    },
+
+    /**
+     * @private
+     */
     logToStdOut : function (errorList) {
-        errorList.title = 'LintRoller : Output for ' + new Date();
-        this.log('\nFound ' + errorList.totalErrors + ' errors.', true);
-
-        var output = errorList.title + '\n\n';
-        output += this.formatTextOutput(errorList);
-
-        this.log(output, true);
+        this.log(this.formatTextOutput(errorList), true);
     },
 
     /**
      * @private
      */
     logToFile : function (errorList) {
-        errorList.title = 'LintRoller : Output for ' + new Date();
         this.log('\nWriting ' + errorList.totalErrors + ' errors to new log file.', true);
 
         var output;
@@ -392,12 +449,10 @@ var LintRoller = {
 
             case 'XML':
                 this.log('\nNot currently supporting XML output...');
-                //break;
                 return;
 
             default:
-                output = errorList.title + '\n\n';
-                output += this.formatTextOutput(errorList);
+                output = this.formatTextOutput(errorList);
                 break;
         }
 
@@ -410,19 +465,22 @@ var LintRoller = {
     },
 
     formatTextOutput : function (errorList) {
-        var output = '',
+        var output = this.generateLogTitle(errorList),
+            lintErrors,
             i, x, error;
 
         for (i in errorList) {
             if (errorList.hasOwnProperty(i)) {
+                lintErrors = errorList[i];
+
                 switch (i) {
                     case 'jslint':
                     case 'jshint':
                     case 'esprima':
-                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+                        output += this.generateTextHeader(i, lintErrors);
 
-                        for (x = 0; x < errorList[i].length; x++) {
-                            error = errorList[i][x];
+                        for (x = 0; x < lintErrors.length; x++) {
+                            error = lintErrors[x];
                             output += error.file + '\n' +
                                       '    Line #: ' + error.line + '\n' +
                                       '    Char #: ' + error.character + '\n' +
@@ -431,10 +489,10 @@ var LintRoller = {
                         break;
 
                     case 'w3c_html':
-                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+                        output += this.generateTextHeader(i, lintErrors);
 
-                        for (x = 0; x < errorList[i].length; x++) {
-                            error = errorList[i][x];
+                        for (x = 0; x < lintErrors.length; x++) {
+                            error = lintErrors[x];
                             output += error.file + '\n' +
                                       '    Line #: ' + error.line + '\n' +
                                       '    Char #: ' + error.character + '\n' +

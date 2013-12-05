@@ -42,6 +42,7 @@ var linter = {
         var me = this,
             errorList = [],
             fileMatch = /\.js$/i,
+            lineCount = 0,
             js;
 
         parentModule.log('Running Esprima against code...', false);
@@ -59,6 +60,7 @@ var linter = {
                 }
                 else {
                     js = parentModule.fs.readFileSync(file, 'utf8');
+                    lineCount += js.toString().split('\n').length;
 
                     var i = 0,
                         result, totalErrors, error;
@@ -109,7 +111,7 @@ var linter = {
                     parentModule.announceErrors(errorList);
                 }
 
-                callback(errorList);
+                callback(errorList, lineCount);
             }
         );
     }

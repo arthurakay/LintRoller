@@ -44,6 +44,8 @@ var linter = {
         var errorList = [],
             fileTypes = this.options.fileTypes.toString().replace(',', '|'),
             fileMatch = new RegExp('\\.(' + fileTypes + ')$', 'i'),
+            lineCount = 0,
+            html,
             i;
 
         parentModule.log('Running W3C_HTML against code...', false);
@@ -57,6 +59,9 @@ var linter = {
                     next();
                 }
                 else {
+                    html = parentModule.fs.readFileSync(file, 'utf8');
+                    lineCount += html.toString().split('\n').length;
+
                     w3c.validate({
                         file     : file,
                         output   : 'json',
@@ -94,7 +99,7 @@ var linter = {
                     parentModule.announceErrors(errorList);
                 }
 
-                callback(errorList);
+                callback(errorList, lineCount);
             }
         );
     }
