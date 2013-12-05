@@ -15,7 +15,7 @@ var linter = {
     lib : JSHINT,
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing lint validation options
      */
     options : {
@@ -23,7 +23,7 @@ var linter = {
     },
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing the pre-defined globals of the lint validation options
      */
     globals : {
@@ -59,6 +59,7 @@ var linter = {
         var me = this,
             errorList = [],
             fileMatch = /\.js$/i,
+            lineCount = 0,
             js;
 
         parentModule.log('Running JSHint against code...', false);
@@ -76,6 +77,7 @@ var linter = {
                 }
                 else {
                     js = parentModule.fs.readFileSync(file, 'utf8');
+                    lineCount += js.toString().split('\n').length;
 
                     var i = 0,
                         result = me.lib(js, me.options, me.globals),
@@ -114,7 +116,7 @@ var linter = {
                     parentModule.announceErrors(errorList);
                 }
 
-                callback(errorList);
+                callback(errorList, lineCount);
             }
         );
     }

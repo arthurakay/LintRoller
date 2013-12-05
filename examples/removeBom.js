@@ -1,30 +1,34 @@
-var LintRoller = require('../src/LintRoller.js');
+var LintRoller = require('../src/LintRoller');
 
 var config = {
-    verbose    : false,
+    verbose          : false,
+    stopOnFirstError : false,
 
-    logFile          : {
+    logFile    : {
         name : './error.log',
         type : 'text'
     },
 
     //recursively include JS files in these folders
     filepaths  : [
-        '../'
+        './'
     ],
 
     //but ignore anything in these folders
     exclusions : [
-        '../node_modules/',
-        '../assets/',
-        '../docs/'
+        './node_modules/',
+        './assets/',
+        './docs/'
     ],
 
     linters : [
+        {
+            type : 'bom'
+        },
         {
             type : 'jsLint'
         }
     ]
 };
 
-LintRoller.util.removeBOM(config);
+LintRoller.init(config);

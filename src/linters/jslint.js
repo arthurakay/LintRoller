@@ -15,7 +15,7 @@ var linter = {
     lib : JSLINT,
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing lint validation options
      */
     options : {
@@ -54,6 +54,7 @@ var linter = {
     runLinter : function (parentModule, callback) {
         var me = this,
             errorList = [],
+            lineCount = 0,
             js;
 
         parentModule.log('Running JSLint against code...', false);
@@ -63,6 +64,7 @@ var linter = {
 
             function (file, next) {
                 js = parentModule.fs.readFileSync(file, 'utf8');
+                lineCount += js.toString().split('\n').length;
 
                 var i = 0,
                     result = me.lib(js, me.options),
@@ -100,7 +102,7 @@ var linter = {
                     parentModule.announceErrors(errorList);
                 }
 
-                callback(errorList);
+                callback(errorList, lineCount);
             }
         );
 

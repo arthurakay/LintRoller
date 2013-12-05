@@ -28,7 +28,7 @@ var linter = {
     lib : w3c,
 
 <span id='LintRoller-linters-W3C_HTML-cfg-options'>    /**
-</span>     * @cfg
+</span>     * @cfg {Object}
      * An object containing lint validation options:
      *
      *   - fileTypes {Array} An array of matching file types (defaults to [ 'html' ] )
@@ -61,6 +61,8 @@ var linter = {
         var errorList = [],
             fileTypes = this.options.fileTypes.toString().replace(',', '|'),
             fileMatch = new RegExp('\\.(' + fileTypes + ')$', 'i'),
+            lineCount = 0,
+            html,
             i;
 
         parentModule.log('Running W3C_HTML against code...', false);
@@ -74,13 +76,18 @@ var linter = {
                     next();
                 }
                 else {
+                    html = parentModule.fs.readFileSync(file, 'utf8');
+                    lineCount += html.toString().split('\n').length;
+
                     w3c.validate({
                         file     : file,
                         output   : 'json',
                         callback : function (error) {
+                            var err;
+
                             if (error) {
                                 for (i = 0; i &lt; error.messages.length; i++) {
-                                    var err = error.messages[i];
+                                    err = error.messages[i];
 
                                     if (err.type === 'error') {
                                         errorList.push({
@@ -109,7 +116,7 @@ var linter = {
                     parentModule.announceErrors(errorList);
                 }
 
-                callback(errorList);
+                callback(errorList, lineCount);
             }
         );
     }

@@ -24,13 +24,15 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.3.3
+ * @version 2.3.5
  *
- * GitHub Project: http://arthurakay.github.com/LintRoller/
+ * GitHub Pages: [http://arthurakay.github.io/LintRoller/](http://arthurakay.github.io/LintRoller/)
+ *
+ * GitHub Repo: [https://github.com/arthurakay/LintRoller](https://github.com/arthurakay/LintRoller)
  */
 "use strict";
 
-var version = '2.3.4';
+var version = '2.3.5';
 
 var LintRoller = {
     /**
@@ -44,51 +46,72 @@ var LintRoller = {
      */
 
     /**
-     * @cfg
+     * @cfg {Boolean}
      * True to log errors directly into stdout
      */
     stdoutErrors : false,
 
     /**
-     * @cfg
+     * @cfg {Boolean}
      * True to show verbose ouput in the terminal.
      */
     verbose : true,
 
     /**
-     * @cfg
+     * @cfg {RegularExpression}
      * Regular Expression for matching files to lint
      */
     regex : /\.(js|html)$/i,
 
     /**
-     * @cfg
+     * @cfg {String}
      * Output message when no lint errors are found
      */
     defaultSuccessMessage : '\nSuccessfully linted your code!\n\n',
 
     /**
-     * @cfg
+     * @cfg {Boolean}
      * True to stop linting your code when the first error is encountered.
      */
     stopOnFirstError : true,
 
     /**
-     * @cfg
+     * @cfg {Array}
      * An array of lint module config objects. See the classes under LintRoller.linters for more information.
      */
     linters : [],
 
     /**
-     * @cfg
+     * @cfg {Object/String}
      * An object containing:
      *
      *   - "name": the relative filepath to where error messages will be logged
-     *   - "type": the type of output ("text", "json", or "xml")
+     *   - "type": the type of output ("text" or "json")
      *
      *   Set to null to disable logging errors to a file.
      *
      *   You can optionally just provide a string as the filepath to a log file - the "type" will simply default to "text".
+     *
+     *   For JSON output, errors returned in following format:
+     *
+     *       errorList = {
+     *           totalErrors : 1,
+     *           totalFiles  : 1,
+     *
+     *           lineCounts : {
+     *               jslint : 35
+     *           },
+     *
+     *           //one array per configured linter
+     *           jslint : [
+     *               {
+     *                   file      : 'file.js',
+     *                   line      : 0,
+     *                   character : 0,
+     *                   reason    : 'Just because!'
+     *               }
+     *           ]
+     *       }
      */
     logFile : {
         name : 'error_log.txt',
@@ -97,6 +120,30 @@ var LintRoller = {
 
     /**
      * Call this method to de-lint your JavaScript codebase.
+     *
+     * See the examples for specific usage, but the basic idea:
+     *
+     *     var LintRoller = require('LintRoller');
+     *
+     *     var config = {
+     *
+     *         //recursively include JS files in these folders
+     *         filepaths  : [
+     *             './'
+     *         ],
+     *
+     *         //but ignore anything in these folders
+     *         exclusions : [
+     *             './node_modules/',
+     *          ],
+     *
+     *         linters : [
+     *             { type : 'jsLint' }
+     *         ]
+     *     };
+     *
+     *     LintRoller.init(config);
+     *
      */
     init : function (config) {
         this.log('*** LintRoller v' + this.getVersion() + ' ***\n', true);
@@ -118,6 +165,8 @@ var LintRoller = {
 
     /**
      * @method
+     *
+     * Returns the current version number.
      */
     getVersion : function () {
         return version;
@@ -326,10 +375,14 @@ var LintRoller = {
      */
     lintFiles : function () {
         var me = this,
-            errorList = {},
+            errorList = {
+                totalFiles : this.files.length,
+
+                lineCounts : {}
+            },
             errors = 0;
 
-        this.log('\n' + this.files.length + ' matching files found.', true);
+        this.log('\n' + errorList.totalFiles + ' matching files found.', true);
 
         /*
          * Loop through all files with each linter
@@ -340,16 +393,24 @@ var LintRoller = {
             function (linter, callback) {
                 linter.runLinter(
                     me,
-                    function (newErrors) {
-                        errors += newErrors.length; //ignore the first record, which is a title
+                    function (newErrors, lineCount) {
+                        if (newErrors) {
+                            errors += newErrors.length;
+                            errorList[linter.name] = newErrors;
+                        }
 
-                        errorList[linter.name] = newErrors;
+                        if (lineCount) {
+                            errorList.lineCounts[linter.name] = lineCount;
+                        }
 
                         callback(null);
                     }
                 );
             },
 
+            /*
+             * When all linting is complete...
+             */
             function () {
                 errorList.totalErrors = errors;
 
@@ -366,21 +427,53 @@ var LintRoller = {
     /**
      * @private
      */
+    generateLogTitle : function(errorList) {
+        var output, key,
+            lineCounts = errorList.lineCounts;
+
+        output = [
+            'LintRoller v' + this.getVersion() + '\n',
+            '    Output for ' + new Date() + '\n',
+            '    Total files found   : ' + errorList.totalFiles,
+            '    All errors reported : ' + errorList.totalErrors,
+            '\n'
+        ];
+
+        for (key in lineCounts) {
+            if (lineCounts.hasOwnProperty(key)) {
+                output.push('    ' + lineCounts[key] + ' lines checked via ' + key.toUpperCase());
+            }
+        }
+
+        output.push('\n');
+
+        return output.join('\n');
+    },
+
+    /**
+     * @private
+     */
+    generateTextHeader : function(linter, lintErrors) {
+        return [
+            '=============== ',
+            'Running ' + linter.toUpperCase(),
+            ' [ Total errors: ' + lintErrors.length + ' ] ',
+            '===============',
+            '\n\n'
+        ].join('');
+    },
+
+    /**
+     * @private
+     */
     logToStdOut : function (errorList) {
-        errorList.title = 'LintRoller : Output for ' + new Date();
-        this.log('\nFound ' + errorList.totalErrors + ' errors.', true);
-
-        var output = errorList.title + '\n\n';
-        output += this.formatTextOutput(errorList);
-
-        this.log(output, true);
+        this.log(this.formatTextOutput(errorList), true);
     },
 
     /**
      * @private
      */
     logToFile : function (errorList) {
-        errorList.title = 'LintRoller : Output for ' + new Date();
         this.log('\nWriting ' + errorList.totalErrors + ' errors to new log file.', true);
 
         var output;
@@ -392,12 +485,10 @@ var LintRoller = {
 
             case 'XML':
                 this.log('\nNot currently supporting XML output...');
-                //break;
                 return;
 
             default:
-                output = errorList.title + '\n\n';
-                output += this.formatTextOutput(errorList);
+                output = this.formatTextOutput(errorList);
                 break;
         }
 
@@ -410,19 +501,22 @@ var LintRoller = {
     },
 
     formatTextOutput : function (errorList) {
-        var output = '',
+        var output = this.generateLogTitle(errorList),
+            lintErrors,
             i, x, error;
 
         for (i in errorList) {
             if (errorList.hasOwnProperty(i)) {
+                lintErrors = errorList[i];
+
                 switch (i) {
                     case 'jslint':
                     case 'jshint':
                     case 'esprima':
-                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+                        output += this.generateTextHeader(i, lintErrors);
 
-                        for (x = 0; x < errorList[i].length; x++) {
-                            error = errorList[i][x];
+                        for (x = 0; x < lintErrors.length; x++) {
+                            error = lintErrors[x];
                             output += error.file + '\n' +
                                       '    Line #: ' + error.line + '\n' +
                                       '    Char #: ' + error.character + '\n' +
@@ -431,10 +525,10 @@ var LintRoller = {
                         break;
 
                     case 'w3c_html':
-                        output += '=============== Running ' + i.toUpperCase() + ' ===============' + '\n\n';
+                        output += this.generateTextHeader(i, lintErrors);
 
-                        for (x = 0; x < errorList[i].length; x++) {
-                            error = errorList[i][x];
+                        for (x = 0; x < lintErrors.length; x++) {
+                            error = lintErrors[x];
                             output += error.file + '\n' +
                                       '    Line #: ' + error.line + '\n' +
                                       '    Char #: ' + error.character + '\n' +
@@ -483,10 +577,6 @@ var initModules = function (me) {
 
     //async lib
     me.async = require('async');
-
-    //other utilities
-    var util = require('./util');
-    me.util = util.init(me);
 };
 
 initModules(LintRoller);

@@ -16,7 +16,7 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">&quot;use strict&quot;;
-var JSLINT = require('jslint');
+var JSLINT = require('jslint')();
 
 <span id='LintRoller-linters-JSLint'>/**
 </span> * @class LintRoller.linters.JSLint
@@ -32,7 +32,7 @@ var linter = {
     lib : JSLINT,
 
 <span id='LintRoller-linters-JSLint-cfg-options'>    /**
-</span>     * @cfg
+</span>     * @cfg {Object}
      * An object containing lint validation options
      */
     options : {
@@ -71,6 +71,7 @@ var linter = {
     runLinter : function (parentModule, callback) {
         var me = this,
             errorList = [],
+            lineCount = 0,
             js;
 
         parentModule.log('Running JSLint against code...', false);
@@ -80,6 +81,7 @@ var linter = {
 
             function (file, next) {
                 js = parentModule.fs.readFileSync(file, 'utf8');
+                lineCount += js.toString().split('\n').length;
 
                 var i = 0,
                     result = me.lib(js, me.options),
@@ -117,7 +119,7 @@ var linter = {
                     parentModule.announceErrors(errorList);
                 }
 
-                callback(errorList);
+                callback(errorList, lineCount);
             }
         );
 
