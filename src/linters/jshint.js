@@ -15,7 +15,7 @@ var linter = {
     lib : JSHINT,
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing lint validation options
      */
     options : {
@@ -23,7 +23,7 @@ var linter = {
     },
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing the pre-defined globals of the lint validation options
      */
     globals : {

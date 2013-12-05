@@ -11,7 +11,7 @@ var linter = {
     lib : w3c,
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing lint validation options:
      *
      *   - fileTypes {Array} An array of matching file types (defaults to [ 'html' ] )

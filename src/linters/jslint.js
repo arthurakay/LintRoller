@@ -15,7 +15,7 @@ var linter = {
     lib : JSLINT,
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing lint validation options
      */
     options : {

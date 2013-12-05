@@ -11,7 +11,7 @@ var linter = {
     lib : ESPRIMA,
 
     /**
-     * @cfg
+     * @cfg {Object}
      * An object containing lint validation options
      */
     options : {

@@ -1,7 +1,7 @@
 {
     "name"         : "lintroller",
     "preferGlobal" : "true",
-    "version"      : "2.3.4a",
+    "version"      : "2.3.5",
 
     "author"      : "Arthur Kay <art@akawebdesign.com>",
     "description" : "Lint your JavaScript and HTML code and output errors to a log file. Convenient for pre-commit hooks and build systems to maintain code quality.",

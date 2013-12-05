@@ -24,13 +24,15 @@
  * @class LintRoller
  * @author Arthur Kay (http://www.akawebdesign.com)
  * @singleton
- * @version 2.3.3
+ * @version 2.3.5
  *
- * GitHub Project: http://arthurakay.github.com/LintRoller/
+ * GitHub Pages: [http://arthurakay.github.io/LintRoller/](http://arthurakay.github.io/LintRoller/)
+ *
+ * GitHub Repo: [https://github.com/arthurakay/LintRoller](https://github.com/arthurakay/LintRoller)
  */
 "use strict";
 
-var version = '2.3.4';
+var version = '2.3.5';
 
 var LintRoller = {
     /**
@@ -44,43 +46,43 @@ var LintRoller = {
      */
 
     /**
-     * @cfg
+     * @cfg {Boolean}
      * True to log errors directly into stdout
      */
     stdoutErrors : false,
 
     /**
-     * @cfg
+     * @cfg {Boolean}
      * True to show verbose ouput in the terminal.
      */
     verbose : true,
 
     /**
-     * @cfg
+     * @cfg {RegularExpression}
      * Regular Expression for matching files to lint
      */
     regex : /\.(js|html)$/i,
 
     /**
-     * @cfg
+     * @cfg {String}
      * Output message when no lint errors are found
      */
     defaultSuccessMessage : '\nSuccessfully linted your code!\n\n',
 
     /**
-     * @cfg
+     * @cfg {Boolean}
      * True to stop linting your code when the first error is encountered.
      */
     stopOnFirstError : true,
 
     /**
-     * @cfg
+     * @cfg {Array}
      * An array of lint module config objects. See the classes under LintRoller.linters for more information.
      */
     linters : [],
 
     /**
-     * @cfg
+     * @cfg {Object/String}
      * An object containing:
      *
      *   - "name": the relative filepath to where error messages will be logged
@@ -92,20 +94,24 @@ var LintRoller = {
      *
      *   For JSON output, errors returned in following format:
      *
-     *   errorList = {
-     *       totalErrors : 1,
-     *       totalFiles  : 1,
+     *       errorList = {
+     *           totalErrors : 1,
+     *           totalFiles  : 1,
      *
-     *       //one array per configured linter
-     *       jslint : [
-     *           {
-     *               file      : 'file.js',
-     *               line      : 0,
-     *               character : 0,
-     *               reason    : 'Just because!'
-     *           }
-     *       ]
-     *   }
+     *           lineCounts : {
+     *               jslint : 35
+     *           },
+     *
+     *           //one array per configured linter
+     *           jslint : [
+     *               {
+     *                   file      : 'file.js',
+     *                   line      : 0,
+     *                   character : 0,
+     *                   reason    : 'Just because!'
+     *               }
+     *           ]
+     *       }
      */
     logFile : {
         name : 'error_log.txt',
@@ -114,6 +120,30 @@ var LintRoller = {
 
     /**
      * Call this method to de-lint your JavaScript codebase.
+     *
+     * See the examples for specific usage, but the basic idea:
+     *
+     *     var LintRoller = require('LintRoller');
+     *
+     *     var config = {
+     *
+     *         //recursively include JS files in these folders
+     *         filepaths  : [
+     *             './'
+     *         ],
+     *
+     *         //but ignore anything in these folders
+     *         exclusions : [
+     *             './node_modules/',
+     *          ],
+     *
+     *         linters : [
+     *             { type : 'jsLint' }
+     *         ]
+     *     };
+     *
+     *     LintRoller.init(config);
+     *
      */
     init : function (config) {
         this.log('*** LintRoller v' + this.getVersion() + ' ***\n', true);
@@ -135,6 +165,8 @@ var LintRoller = {
 
     /**
      * @method
+     *
+     * Returns the current version number.
      */
     getVersion : function () {
         return version;
@@ -396,7 +428,7 @@ var LintRoller = {
             lineCounts = errorList.lineCounts;
 
         output = [
-            'LintRoller v' + version + '\n',
+            'LintRoller v' + this.getVersion() + '\n',
             '    Output for ' + new Date() + '\n',
             '    Total files found   : ' + errorList.totalFiles,
             '    All errors reported : ' + errorList.totalErrors,
