@@ -394,10 +394,14 @@ var LintRoller = {
                 linter.runLinter(
                     me,
                     function (newErrors, lineCount) {
-                        errors += newErrors.length;
+                        if (newErrors) {
+                            errors += newErrors.length;
+                            errorList[linter.name] = newErrors;
+                        }
 
-                        errorList[linter.name] = newErrors;
-                        errorList.lineCounts[linter.name] = lineCount;
+                        if (lineCount) {
+                            errorList.lineCounts[linter.name] = lineCount;
+                        }
 
                         callback(null);
                     }
@@ -573,10 +577,6 @@ var initModules = function (me) {
 
     //async lib
     me.async = require('async');
-
-    //other utilities
-    var util = require('./util');
-    me.util = util.init(me);
 };
 
 initModules(LintRoller);
