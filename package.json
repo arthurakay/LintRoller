@@ -1,9 +1,12 @@
 {
     "name"         : "lintroller",
     "preferGlobal" : "true",
-    "version"      : "2.3.5",
+    "version"      : "2.3.5a",
 
-    "author"      : "Arthur Kay <art@akawebdesign.com>",
+    "license"  : "MIT",
+    "homepage" : "http://arthurakay.github.io/LintRoller/",
+
+    "author"      : "Arthur Kay <art@akawebdesign.com> (http://www.akawebdesign.com)",
     "description" : "Lint your JavaScript and HTML code and output errors to a log file. Convenient for pre-commit hooks and build systems to maintain code quality.",
 
     "contributors" : [
@@ -31,5 +34,11 @@
         "w3cjs"        : ">=0.1.9",
         "async"        : ">=0.2.7",
         "jasmine-node" : ">=1.7.0"
-    }
+    },
+
+    "keywords" : [
+        "lint",
+        "jslint",
+        "jshint"
+    ]
 }
