@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/senchalabs/jsduck.png)](https://travis-ci.org/senchalabs/jsduck)
+[![Build Status](https://travis-ci.org/arthurakay/LintRoller.png)](https://travis-ci.org/arthurakay/LintRoller)
 
 OVERVIEW:
 ---------
