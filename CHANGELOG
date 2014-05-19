@@ -1,6 +1,9 @@
 ===============
   VERSION 2.x
 ===============
+Version 2.3.6 (May 19, 2014)
+  - Fix for issue #24
+
 Version 2.3.5 (December 4, 2013)
   - Added reporting metrics to output (line numbers, total errors, errors per linter)
   - Moved BOM and Tabs utilities into their own files (removing Util class, streamlining workflow)
