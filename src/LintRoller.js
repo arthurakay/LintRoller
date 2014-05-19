@@ -335,38 +335,44 @@ var LintRoller = {
      */
     parseFile : function (currPath, fileName) {
         var spacer = '    ',
-            childPath;
+            filePath = currPath + fileName,
+            childPath,
+            stats;
 
-        var stats = this.fs.statSync(currPath + fileName);
+        if (this.fs.existsSync(filePath)) {
+            stats = this.fs.statSync(filePath);
 
-        if (stats.isFile()) {
-            this.log(spacer + fileName + ' IS A FILE');
-            /*
-             * We only want files matching our regex
-             */
-            if (this.regex.test(fileName)) {
-                this.files.push(currPath + fileName);
-                this.log(spacer + 'Added to the list.');
+            if (stats.isFile()) {
+                this.log(spacer + fileName + ' IS A FILE');
+                /*
+                 * We only want files matching our regex
+                 */
+                if (this.regex.test(fileName)) {
+                    this.files.push(filePath);
+                    this.log(spacer + 'Added to the list.');
+                }
+                else {
+                    this.log(spacer + fileName + ' IS NOT A MATCHING FILE');
+                }
             }
             else {
-                this.log(spacer + fileName + ' IS NOT A MATCHING FILE');
-            }
-        }
-        else {
-            this.log(spacer + fileName + ' IS NOT A FILE');
+                this.log(spacer + fileName + ' IS NOT A FILE');
 
-            /*
-             * If not a file
-             *   - check against parent paths
-             *   - recurse into child paths
-             */
-            if (fileName === '.' || fileName === '..') {
-                this.log(spacer + fileName + ' IS A RELATIVE DIRECTORY PATH');
+                /*
+                 * If not a file
+                 *   - check against parent paths
+                 *   - recurse into child paths
+                 */
+                if (fileName === '.' || fileName === '..') {
+                    this.log(spacer + fileName + ' IS A RELATIVE DIRECTORY PATH');
+                }
+                else {
+                    childPath = filePath + '/';
+                    this.parseTree(childPath);
+                }
             }
-            else {
-                childPath = currPath + fileName + '/';
-                this.parseTree(childPath);
-            }
+        } else {
+            this.log(spacer + fileName + ' IS NOT AN EXISTING FILE');
         }
     },
 
